@@ -1,0 +1,4 @@
+package(default_visibility = ["//visibility:public"])
+
+# Placeholder target for shared Compose UI components.
+

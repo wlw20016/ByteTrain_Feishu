@@ -1,0 +1,5 @@
+package(default_visibility = ["//visibility:private"])
+
+# Root package placeholder. Concrete targets live under app/, features/, shared/,
+# proto/, and sdk/rust/.
+

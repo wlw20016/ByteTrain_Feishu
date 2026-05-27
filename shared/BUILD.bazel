@@ -1,0 +1,4 @@
+package(default_visibility = ["//visibility:public"])
+
+# Placeholder package. Concrete shared targets live in subdirectories.
+

@@ -1,0 +1,23 @@
+# OS / editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+*.bak
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Bazel
+bazel-*
+
+# Rust
+target/
+
+# IDE
+.idea/
+.vscode/

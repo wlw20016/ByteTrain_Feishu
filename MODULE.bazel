@@ -1,0 +1,7 @@
+module(
+    name = "bytetrain_feishu_clone_android",
+    version = "0.1.0",
+)
+
+# Toolchain and dependency declarations will be added by later Bazel changes.
+

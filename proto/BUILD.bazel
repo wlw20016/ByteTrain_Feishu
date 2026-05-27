@@ -1,0 +1,4 @@
+package(default_visibility = ["//visibility:public"])
+
+# Placeholder proto targets. rules_proto integration will be added later.
+

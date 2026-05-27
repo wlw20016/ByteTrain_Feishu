@@ -1,0 +1,4 @@
+package(default_visibility = ["//visibility:public"])
+
+# Placeholder targets. Kotlin and Android rules will be wired in later changes.
+

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package bytetrain.feed;
+
+message MailItem {
+  string id = 1;
+  string sender = 2;
+  string subject = 3;
+  string preview = 4;
+  int64 timestamp_millis = 5;
+  bool unread = 6;
+}
+
