@@ -263,6 +263,8 @@ scripts/
     └── check_pre_push.py
 ```
 
+本项目组员统一使用 Windows 时，推荐使用 **Git for Windows + PowerShell**。
+
 首次拉取仓库后，需要在仓库根目录执行一次：
 
 ```bash
@@ -270,7 +272,7 @@ scripts/
 ./scripts/setup-git-hooks.ps1
 ```
 
-或：
+如果使用 Git Bash，也可以执行：
 
 ```bash
 # macOS / Linux / Git Bash
@@ -284,6 +286,17 @@ git config core.hooksPath .githooks
 ```
 
 执行后，本仓库的 Git 操作就会使用 `.githooks/` 里的检查逻辑。
+
+Windows 环境需要注意：
+
+```text
+1. 需要安装 Git for Windows
+2. 需要安装 Python 3，并确保 python 或 py 命令可用
+3. 如果要正常 git push，需要安装 bazel 或 bazelisk
+4. .githooks/ 下的 hook 会由 Git for Windows 自带的 sh.exe 执行，不需要组员手动运行这些 hook 文件
+```
+
+仓库里已经通过 `.gitattributes` 固定了 hook 和 `.sh` 文件使用 LF 换行，避免 Windows 自动转换成 CRLF 后导致 hook 执行异常。
 
 ## 2. commit message 规范
 
