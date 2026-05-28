@@ -1,20 +1,20 @@
-﻿# Proposal: add-ui-main-flow
+# Proposal: add-ui-main-flow
 
-## Why
+## 背景
 
-The current repository only contains an Android entry placeholder and domain model skeletons. The course requires a runnable Android app with message and mail tabs, 10000 mock records per tab, pagination, reusable list/detail abstractions, and documented UI state handling.
+当前仓库只有 Android 入口占位类和领域模型骨架。课题要求交付一个可运行的 Android App，包含消息和邮箱两个 Tab，每个 Tab 支持 10000 条 mock 数据、分页加载、二级详情页、可复用列表/详情抽象，以及清晰的 UI 状态设计。
 
-## What
+## 变更内容
 
-- Implement a real Android app entry and two-tab navigation.
-- Add a shared UI list model and complete paging state model.
-- Implement message list, message detail, mail list, and mail detail flows.
-- Add mock repositories with 10000 records and cursor/page-size based pagination.
-- Reuse shared list, paging, and detail abstractions across message and mail.
-- Add UI state matrix, mapper tests, repository tests, and manual validation evidence.
+- 实现真实 Android App 入口和双 Tab 导航。
+- 新增统一 UI 列表模型，并完善分页状态模型。
+- 实现消息列表、消息详情、邮箱列表、邮箱详情主链路。
+- 新增 10000 条 mock 数据仓库，并支持基于 `pageSize/cursor` 的分页。
+- 消息和邮箱复用共享列表、分页和详情抽象。
+- 补充 UI 状态矩阵、mapper 测试、repository 测试和人工验收记录。
 
-## Impact
+## 影响范围
 
-- Affects `app/`, `features/message/`, `features/mail/`, `shared/list`, `shared/ui`, and `shared/navigation`.
-- Requires follow-up Bazel/Gradle validation depending on the selected Android toolchain.
-- Defines the first functional acceptance milestone for the project.
+- 涉及 `app/`、`features/message/`、`features/mail/`、`shared/list`、`shared/ui` 和 `shared/navigation`。
+- 根据最终 Android 工具链选择，可能需要 Gradle 或 Bazel 构建验证。
+- 本 change 是项目第一阶段可视化功能验收的核心里程碑。

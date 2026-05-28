@@ -1,8 +1,8 @@
-﻿# Design: improve-ai-context
+# Design: improve-ai-context
 
-## Documentation Surfaces
+## 文档入口
 
-Maintain these AI-readable documents:
+持续维护以下 AI 可读文档：
 
 - `docs/ai-context/project-structure.md`
 - `docs/ai-context/module-boundaries.md`
@@ -11,22 +11,22 @@ Maintain these AI-readable documents:
 - `docs/ai-context/ide-bazel-workflow.md`
 - `openspec/prompt.md`
 
-## Evidence Model
+## 证据模型
 
-Each important AI-assisted task records:
+每次重要 AI 协作应记录：
 
 - Prompt
-- Context given to AI
-- AI conclusion
-- Human decision
-- Accepted/rejected suggestions
-- Final result
-- Build/test/manual validation evidence when applicable
+- 提供给 AI 的上下文
+- AI 结论
+- 人工决策
+- 采纳和拒绝的建议
+- 最终结果
+- 构建、测试或人工验收证据
 
-## IDE Workflow
+## IDE 工作流
 
-The IDE workflow document should explain how the team edits, indexes, builds, tests, and diagnoses Kotlin, Rust, proto, and BUILD files in Trae or VS Code.
+IDE 工作流文档需要说明团队如何在 Trae 或 VS Code 中编辑、索引、构建、测试和诊断 Kotlin、Rust、proto、BUILD 文件。
 
-## Build Helper
+## 构建辅助
 
-The plugin/helper task is P2. If time is limited, a documented design and minimal command wrapper are acceptable before a full plugin.
+插件或构建辅助任务为 P2。如果时间有限，先交付设计文档和最小命令包装脚本即可，不强行实现完整插件。

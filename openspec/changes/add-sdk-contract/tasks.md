@@ -1,25 +1,25 @@
-﻿# Tasks: add-sdk-contract
+# Tasks: add-sdk-contract
 
-## 1. Proto Contract
+## 1. Proto 契约
 
-- [ ] SDK-001 Expand `message.proto`, `mail.proto`, and `paging.proto` to match the agreed Kotlin domain fields.
-- [ ] SDK-002 Define message and mail page response messages or an equivalent shared paging response strategy.
-- [ ] Document cursor semantics and compatibility expectations in `design.md` or proto comments.
+- [ ] SDK-001 扩展 `message.proto`、`mail.proto` 和 `paging.proto`，与已确认的 Kotlin 领域字段保持一致。
+- [ ] SDK-002 定义消息和邮箱分页响应 message，或采用等价的共享分页响应策略。
+- [ ] 在 `design.md` 或 proto 注释中记录 cursor 语义和兼容性约定。
 
 ## 2. Rust SDK
 
-- [ ] SDK-003 Implement Rust mock data models and deterministic 10000-record generators for messages and mails.
-- [ ] SDK-004 Implement Rust pagination APIs for message and mail data.
-- [ ] Add Rust unit tests for first page, middle page, final page, invalid cursor, and page size boundaries.
+- [ ] SDK-003 实现 Rust mock 数据模型，并为消息和邮箱生成确定性的 10000 条记录。
+- [ ] SDK-004 实现 Rust 消息和邮箱分页 API。
+- [ ] 增加 Rust 单测，覆盖第一页、中间页、最后一页、非法 cursor 和 page size 边界。
 
-## 3. Async and Adapter Boundary
+## 3. 异步与 Adapter 边界
 
-- [ ] SDK-005 Define the Kotlin-to-SDK async boundary and error mapping strategy.
-- [ ] SDK-006 Implement SDK-backed repository adapters after the UI mock path is stable.
-- [ ] Keep Kotlin mock repositories available as fallback until SDK integration is validated.
+- [ ] SDK-005 定义 Kotlin 到 SDK 的异步边界和错误映射策略。
+- [ ] SDK-006 在 UI mock 主链路稳定后实现 SDK-backed repository adapter。
+- [ ] 在 SDK 集成验证完成前保留 Kotlin mock repository 作为回退路径。
 
-## 4. Evidence
+## 4. 证据
 
-- [ ] Record AI-generated protocol suggestions and human decisions.
-- [ ] Record `cargo test` or Bazel test results when available.
-- [ ] Update Feishu Bitable rows for SDK/proto tasks with OpenSpec evidence links.
+- [ ] 记录 AI 生成的协议建议和人工取舍。
+- [ ] 可运行时记录 `cargo test` 或 Bazel test 结果。
+- [ ] 更新飞书多维表格中 SDK/proto 任务的 OpenSpec 证据链接。

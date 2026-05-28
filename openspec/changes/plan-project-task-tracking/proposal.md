@@ -1,18 +1,18 @@
-﻿# Proposal: plan-project-task-tracking
+# Proposal: plan-project-task-tracking
 
-## Why
+## 背景
 
-The project has been initialized, but the next work must be trackable across two engineers, Feishu Bitable, OpenSpec changes, build evidence, and acceptance records. A task table alone is not enough for final review because the course requires repository-based evidence.
+项目已经完成初始化，但后续工作需要在两名工程师、飞书多维表格、OpenSpec change、构建证据和验收记录之间建立可追踪关系。单独的任务表只能用于日常推进，不能满足课题对“仓库内证据链”的要求。
 
-## What
+## 变更内容
 
-- Establish the project delivery task registry as an OpenSpec-tracked change.
-- Map Feishu Bitable task IDs to OpenSpec changes and repository outputs.
-- Define the fields that must be maintained for status, owner, priority, dependency, validation, and evidence.
-- Use this change as the entry point for project management tasks, while implementation work lives in dedicated changes.
+- 将项目交付任务台账纳入 OpenSpec change 管理。
+- 建立飞书多维表格任务 ID 与 OpenSpec change、仓库产物之间的映射关系。
+- 明确任务表需要维护的字段：状态、负责人、优先级、依赖、验收标准和证据链接。
+- 将本 change 作为项目管理入口；具体功能实现分别进入独立 change。
 
-## Impact
+## 影响范围
 
-- Adds a project-management OpenSpec change.
-- Does not change app behavior or build configuration.
-- Creates a stable reference for Feishu Bitable tracking and later PR descriptions.
+- 新增项目管理类 OpenSpec change。
+- 不改变 App 行为，也不改变构建配置。
+- 为后续 PR 描述、验收记录和飞书多维表格进度跟踪提供统一入口。

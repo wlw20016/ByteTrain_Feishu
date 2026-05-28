@@ -1,18 +1,18 @@
-﻿# Proposal: wire-bazel-build
+# Proposal: wire-bazel-build
 
-## Why
+## 背景
 
-The repository currently contains placeholder BUILD files only. The course explicitly requires Bazel to manage modules, dependencies, build, tests, query analysis, and engineering evidence.
+当前仓库中的 BUILD 文件只是占位。课题明确要求使用 Bazel 管理模块、依赖、构建、测试、query 分析和工程证据。
 
-## What
+## 变更内容
 
-- Choose and document Bazel rules for Android, Kotlin, proto, and Rust.
-- Wire proto, shared, feature, app, and Rust SDK targets incrementally.
-- Add build/test/query commands to the AI context docs.
-- Record build failures, fixes, query results, and validation evidence.
+- 选择并记录 Android、Kotlin、proto、Rust 对应的 Bazel rules。
+- 逐步接入 proto、shared、feature、app 和 Rust SDK target。
+- 将构建、测试和 query 命令沉淀到 AI 上下文文档。
+- 记录构建失败、修复过程、query 结果和验证证据。
 
-## Impact
+## 影响范围
 
-- Affects `MODULE.bazel`, `BUILD.bazel` files, `docs/ai-context`, and possibly generated-source conventions.
-- May require local toolchain installation or dependency downloads.
-- Creates the formal build-validation path for later acceptance.
+- 涉及 `MODULE.bazel`、各层 `BUILD.bazel`、`docs/ai-context`，以及可能的生成代码约定。
+- 可能需要本地工具链安装或依赖下载。
+- 为后续正式验收建立构建验证路径。

@@ -1,34 +1,33 @@
-﻿# SDK Contract Delta
+# SDK 契约能力增量
 
 ## ADDED Requirements
 
-### Requirement: SDK and UI SHALL share explicit data contracts
+### Requirement: SDK 与 UI MUST 共享显式数据契约
 
-Message, mail, and paging contracts SHALL be represented in protobuf and aligned with Kotlin domain models.
+消息、邮箱和分页契约 MUST 使用 protobuf 表达，并与 Kotlin 领域模型保持一致。
 
-#### Scenario: A message page is requested
+#### Scenario: 请求消息分页数据
 
-- Given the UI requests a message page with page size and cursor
-- When the SDK contract is used
-- Then the response contains message items, next cursor, and has-more information with the agreed semantics
+- Given UI 使用页大小和 cursor 请求消息分页数据
+- When SDK 契约被使用
+- Then 响应包含消息 item、next cursor 和 has-more 信息，并符合约定语义
 
-### Requirement: Rust SDK SHALL provide mock paged data
+### Requirement: Rust SDK MUST 提供分页 mock 数据
 
-The Rust SDK SHALL provide deterministic mock message and mail page APIs for development and validation.
+Rust SDK MUST 为开发和验证提供确定性的消息和邮箱分页 mock API。
 
-#### Scenario: Last page is requested
+#### Scenario: 请求最后一页
 
-- Given the cursor points to the final page
-- When the SDK returns data
-- Then `has_more` is false and no invalid next page is advertised
+- Given cursor 指向最后一页
+- When SDK 返回数据
+- Then `has_more` 为 false，并且不会暴露无效的下一页
 
-### Requirement: UI SHALL depend on repository interfaces, not SDK internals
+### Requirement: UI MUST 依赖 repository 接口而不是 SDK 内部实现
 
-Android UI code SHALL use repository interfaces and adapters so the data source can switch from Kotlin mock to SDK-backed implementation.
+Android UI 代码 MUST 使用 repository 接口和 adapter，使数据源能够从 Kotlin mock 切换为 SDK-backed 实现。
 
-#### Scenario: Data source changes
+#### Scenario: 数据源切换
 
-- Given the app switches from mock repository to SDK adapter
-- When the list screen loads data
-- Then UI rendering and paging behavior remain unchanged
-
+- Given App 从 mock repository 切换为 SDK adapter
+- When 列表页面加载数据
+- Then UI 渲染和分页行为保持不变

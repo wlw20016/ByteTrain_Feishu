@@ -1,45 +1,45 @@
-﻿# Design: add-sdk-contract
+# Design: add-sdk-contract
 
-## Contract First
+## 契约先行
 
-Business models remain separate:
+业务模型保持分离：
 
-- Message: conversation-focused fields.
-- Mail: mail-card-focused fields.
+- 消息：以会话字段为核心。
+- 邮箱：以邮件卡片字段为核心。
 
-Paging semantics are shared:
+分页语义共享：
 
-- `page_size`: requested page size.
-- `cursor`: empty or absent means first page.
-- `next_cursor`: absent or empty with `has_more = false` means no more records.
-- `has_more`: whether another page can be requested.
+- `page_size`：请求页大小。
+- `cursor`：为空或缺省表示第一页。
+- `next_cursor`：为空且 `has_more = false` 表示没有更多数据。
+- `has_more`：是否还可以继续请求下一页。
 
-## Proto Plan
+## Proto 方案
 
-Update proto files to match the agreed business model fields:
+更新 proto 文件，使其匹配已确认的业务模型字段：
 
-- `message.proto`: message item and message page response.
-- `mail.proto`: mail item and mail page response.
-- `paging.proto`: common page request and page info.
+- `message.proto`：消息 item 和消息分页响应。
+- `mail.proto`：邮箱 item 和邮箱分页响应。
+- `paging.proto`：通用分页请求和分页信息。
 
-## Rust SDK Plan
+## Rust SDK 方案
 
-Rust SDK exposes a small stable mock service boundary:
+Rust SDK 暴露小而稳定的 mock 服务边界：
 
 - `get_message_page(page_size, cursor) -> SdkResult<Page<MessageItem>>`
 - `get_mail_page(page_size, cursor) -> SdkResult<Page<MailItem>>`
 
-The first implementation can generate deterministic mock data in memory. The SDK shall include tests for pagination and cursor handling.
+第一版实现可以在内存中生成确定性的 mock 数据。SDK 需要包含分页和 cursor 处理测试。
 
-## Kotlin Adapter Plan
+## Kotlin Adapter 方案
 
-The UI keeps using repository interfaces. SDK integration happens behind adapters:
+UI 继续依赖 repository 接口。SDK 集成隐藏在 adapter 后面：
 
 - `SdkMessageRepository : MessageRepository`
 - `SdkMailRepository : MailRepository`
 
-This keeps UI code independent from SDK transport details.
+这样 UI 代码不依赖 SDK 传输细节。
 
-## Error Model
+## 错误模型
 
-Errors should be represented with a structured SDK error type that can be mapped to UI error messages without leaking low-level implementation details.
+SDK 错误应使用结构化错误类型表达，并能映射为 UI 错误文案，避免 UI 泄漏底层实现细节。

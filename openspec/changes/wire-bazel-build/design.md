@@ -1,19 +1,19 @@
-﻿# Design: wire-bazel-build
+# Design: wire-bazel-build
 
-## Incremental Build Strategy
+## 增量构建策略
 
-Bazel should be connected from small stable targets to the full app:
+Bazel 应从小而稳定的 target 开始接入，再推进到完整 App：
 
-1. Proto targets.
-2. Shared Kotlin targets.
-3. Feature Kotlin targets.
-4. Android app target.
-5. Rust SDK target.
-6. Query and dependency-boundary evidence.
+1. Proto target。
+2. Shared Kotlin target。
+3. Feature Kotlin target。
+4. Android App target。
+5. Rust SDK target。
+6. Query 和依赖边界证据。
 
-## Target Boundary
+## Target 边界
 
-Expected target groups:
+预期 target 分组：
 
 - `//proto:...`
 - `//shared/list:...`
@@ -23,18 +23,18 @@ Expected target groups:
 - `//app:app`
 - `//sdk/rust:...`
 
-## Documentation
+## 文档
 
-Every build change should update or verify:
+每次构建相关变更都应更新或验证：
 
 - `docs/ai-context/build-commands.md`
 - `docs/ai-context/module-boundaries.md`
 - `docs/ai-context/common-build-errors.md`
 
-## Query Evidence
+## Query 证据
 
-Use `bazel query`, `cquery`, or `aquery` when useful to prove module dependency boundaries and diagnose failures.
+在需要证明模块依赖边界或定位构建失败时，使用 `bazel query`、`cquery` 或 `aquery`。
 
-## Risk
+## 风险
 
-Android + Kotlin + Rust + proto Bazel integration can be time-consuming. The change should prefer incremental, reviewable steps over one large toolchain rewrite.
+Android、Kotlin、Rust、proto 的 Bazel 集成可能耗时较长。该 change 应优先采用增量、可 review 的步骤，避免一次性大规模接入工具链。

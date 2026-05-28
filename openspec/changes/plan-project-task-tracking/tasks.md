@@ -1,26 +1,26 @@
-﻿# Tasks: plan-project-task-tracking
+# Tasks: plan-project-task-tracking
 
-## 1. Feishu Bitable Setup
+## 1. 飞书多维表格配置
 
-- [ ] Import `C:\Users\23064\feishu_app_bitable_tasks.tsv` into Feishu Bitable.
-- [ ] Configure `Status`, `Priority`, and `Owner` as structured fields.
-- [ ] Create views for P0 tasks, owner workload, blocked tasks, and acceptance-ready tasks.
+- [ ] 导入 `C:\Users\23064\feishu_app_bitable_tasks.tsv` 到飞书多维表格。
+- [ ] 将 `状态`、`优先级`、`负责人` 配置为结构化字段。
+- [ ] 创建 P0 任务、按负责人、阻塞任务、待验收任务等视图。
 
-## 2. OpenSpec Mapping
+## 2. OpenSpec 映射
 
-- [x] Create phase-level OpenSpec changes for the generated task list.
-  - Evidence: `plan-project-task-tracking`, `add-ui-main-flow`, `add-sdk-contract`, `wire-bazel-build`, `improve-ai-context`.
-- [ ] Add the OpenSpec change ID to each Feishu Bitable task row.
-- [ ] Keep Bitable task IDs in related `tasks.md` items.
+- [x] 为生成的任务列表创建阶段级 OpenSpec changes。
+  - 证据：`plan-project-task-tracking`、`add-ui-main-flow`、`add-sdk-contract`、`wire-bazel-build`、`improve-ai-context`。
+- [ ] 将 OpenSpec change ID 补充到每一条飞书多维表格任务记录中。
+- [ ] 在相关 `tasks.md` 中保留飞书任务 ID，便于双向追踪。
 
-## 3. Review Workflow
+## 3. Review 流程
 
-- [ ] Define that Bitable status is operational tracking only.
-- [ ] Define that OpenSpec `tasks.md` evidence is the formal acceptance source.
-- [ ] Update PR template or PR description convention to include OpenSpec change ID, test result, and AI usage notes.
+- [ ] 明确飞书多维表格只作为日常进度跟踪入口。
+- [ ] 明确 OpenSpec `tasks.md` 中的证据才是正式验收依据。
+- [ ] 更新 PR 描述约定，至少包含 OpenSpec change ID、测试结果和 AI 使用记录。
 
-## 4. Acceptance
+## 4. 验收标准
 
-- [ ] Every P0 task is linked to an OpenSpec change.
-- [ ] Every completed P0 task has evidence in the corresponding `tasks.md`.
-- [ ] The final project review can be traced from Bitable row -> OpenSpec change -> code/doc diff -> build/test/manual evidence.
+- [ ] 每个 P0 任务都关联到 OpenSpec change。
+- [ ] 每个已完成 P0 任务都在对应 `tasks.md` 中记录证据。
+- [ ] 最终验收时可以从飞书任务行追踪到 OpenSpec change、代码或文档 diff、构建测试或人工验收证据。

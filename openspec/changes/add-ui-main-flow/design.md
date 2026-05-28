@@ -1,10 +1,10 @@
-﻿# Design: add-ui-main-flow
+# Design: add-ui-main-flow
 
-## Scope
+## 范围
 
-This change delivers the first visible app milestone. Rust SDK and full Bazel wiring are not blocking this change; they are handled by `add-sdk-contract` and `wire-bazel-build`.
+本 change 交付第一阶段可见 App 主链路。Rust SDK 和完整 Bazel 接入不阻塞本 change，它们分别由 `add-sdk-contract` 和 `wire-bazel-build` 跟踪。
 
-## Architecture
+## 架构关系
 
 ```text
 app
@@ -16,9 +16,9 @@ features/message, features/mail
   -> shared/ui models
 ```
 
-## UI Model
+## UI 模型
 
-Add a unified UI model so message and mail can share list/detail rendering:
+新增统一 UI 模型，让消息和邮箱复用列表与详情渲染：
 
 - `UnifiedListItem`
 - `AvatarModel`
@@ -27,14 +27,14 @@ Add a unified UI model so message and mail can share list/detail rendering:
 - `DetailModel`
 - `DetailMeta`
 
-Message and mail keep separate business models, then map into the unified UI model:
+消息和邮箱保留各自业务模型，再映射为统一 UI 模型：
 
 - `MessageItem -> UnifiedListItem`
 - `MailItem -> UnifiedListItem`
 
-## Paging State
+## 分页状态
 
-Extend the existing `PagingUiState<T>` to cover:
+扩展现有 `PagingUiState<T>`，覆盖以下状态：
 
 - Loading
 - Empty
@@ -43,19 +43,19 @@ Extend the existing `PagingUiState<T>` to cover:
 - LoadingMore
 - LoadMoreError
 
-Pagination must not render all 10000 records at once. Repositories expose `loadPage(pageSize, cursor)` and return `items`, `nextCursor`, and `hasMore`.
+分页逻辑不能一次性渲染全部 10000 条数据。Repository 暴露 `loadPage(pageSize, cursor)`，返回 `items`、`nextCursor` 和 `hasMore`。
 
-## Screens
+## 页面
 
-- `MainActivity`: app entry and root composition.
-- Message tab: high-density Feishu-style conversation list.
-- Message detail: title, preview/body, time, unread/pinned/muted/bot metadata.
-- Mail tab: QQ-mail-reminder-style card list.
-- Mail detail: subject, sender, preview/body, received time, attachment/type metadata.
+- `MainActivity`：App 入口和根组件。
+- 消息 Tab：飞书风格高密度会话列表。
+- 消息详情：标题、摘要或正文、时间、未读、置顶、免打扰、机器人等元信息。
+- 邮箱 Tab：QQ 邮箱提醒风格卡片列表。
+- 邮箱详情：主题、发件人、摘要或正文、接收时间、附件、类型等元信息。
 
-## Acceptance Strategy
+## 验收策略
 
-- Repository tests cover pagination boundaries.
-- Mapper tests cover key field mapping.
-- Manual validation covers tab switching, first page loading, load-more, detail navigation, and return behavior.
-- OpenSpec `tasks.md` records screenshots or manual validation notes if UI test infrastructure is not ready.
+- Repository 测试覆盖分页边界。
+- Mapper 测试覆盖关键字段映射。
+- 人工验收覆盖 Tab 切换、首屏加载、加载更多、详情跳转和返回行为。
+- 如果 UI 测试基础设施暂未就绪，则在 OpenSpec `tasks.md` 中记录截图或人工验收说明。

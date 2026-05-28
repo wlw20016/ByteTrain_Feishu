@@ -1,54 +1,53 @@
-﻿# Mobile UI Main Flow Delta
+# 移动端 UI 主链路能力增量
 
 ## ADDED Requirements
 
-### Requirement: The app SHALL provide two primary tabs
+### Requirement: App MUST 提供两个主 Tab
 
-The Android app SHALL provide Message and Mail tabs as the primary navigation surface.
+Android App MUST 提供消息和邮箱两个 Tab，作为核心导航入口。
 
-#### Scenario: User switches tabs
+#### Scenario: 用户切换 Tab
 
-- Given the app is launched
-- When the user selects the Message or Mail tab
-- Then the app displays the corresponding list without losing the other tab's navigation contract
+- Given App 已启动
+- When 用户选择消息或邮箱 Tab
+- Then App 展示对应列表，并保持两个 Tab 的导航契约稳定
 
-### Requirement: Message tab SHALL support paged mock conversations
+### Requirement: 消息 Tab MUST 支持分页 mock 会话
 
-The Message tab SHALL render Feishu-style conversation items from a paged data source containing 10000 mock records.
+消息 Tab MUST 从包含 10000 条 mock 记录的分页数据源渲染飞书风格会话列表。
 
-#### Scenario: User loads more messages
+#### Scenario: 用户加载更多消息
 
-- Given the message list has more records
-- When the user scrolls to the load-more threshold
-- Then the next page is loaded through the repository and appended to the list
+- Given 消息列表还有更多记录
+- When 用户滚动到加载更多阈值
+- Then 下一页数据通过 repository 加载并追加到列表
 
-### Requirement: Mail tab SHALL support paged mock mail cards
+### Requirement: 邮箱 Tab MUST 支持分页 mock 邮件卡片
 
-The Mail tab SHALL render QQ-mail-reminder-style mail cards from a paged data source containing 10000 mock records.
+邮箱 Tab MUST 从包含 10000 条 mock 记录的分页数据源渲染 QQ 邮箱提醒风格邮件卡片。
 
-#### Scenario: User loads more mails
+#### Scenario: 用户加载更多邮件
 
-- Given the mail list has more records
-- When the user scrolls to the load-more threshold
-- Then the next page is loaded through the repository and appended to the list
+- Given 邮箱列表还有更多记录
+- When 用户滚动到加载更多阈值
+- Then 下一页数据通过 repository 加载并追加到列表
 
-### Requirement: List and detail UI SHALL reuse shared models
+### Requirement: 列表和详情 UI MUST 复用共享模型
 
-Message and mail UI SHALL map business models into shared list/detail UI models before rendering.
+消息和邮箱 UI MUST 先将业务模型映射为共享列表/详情 UI 模型，再进行渲染。
 
-#### Scenario: A detail page is opened
+#### Scenario: 打开详情页
 
-- Given a user taps a message or mail item
-- When the detail page opens
-- Then it renders from `DetailModel` rather than directly depending on feature-specific rendering logic
+- Given 用户点击消息或邮箱列表项
+- When 详情页打开
+- Then 页面基于 `DetailModel` 渲染，而不是直接依赖功能专属渲染逻辑
 
-### Requirement: Paging UI states SHALL be explicit
+### Requirement: 分页 UI 状态 MUST 显式表达
 
-The UI SHALL represent loading, empty, error, content, loading-more, and load-more-error states explicitly.
+UI MUST 显式表达加载、空态、错误、内容、加载更多和加载更多失败状态。
 
-#### Scenario: Loading more fails
+#### Scenario: 加载更多失败
 
-- Given the list already has content
-- When loading the next page fails
-- Then the existing content remains visible and the load-more error state is displayed with retry behavior
-
+- Given 列表已经有内容
+- When 下一页加载失败
+- Then 现有内容保持可见，并展示可重试的加载更多失败状态
