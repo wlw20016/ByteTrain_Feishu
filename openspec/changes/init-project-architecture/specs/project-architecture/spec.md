@@ -1,23 +1,23 @@
-# 项目架构变更
+# 项目架构能力增量
 
 ## ADDED Requirements
 
-### Requirement: 仓库架构遵循推荐模块布局
+### Requirement: 仓库架构 MUST 遵循推荐模块布局
 
-仓库必须包含 app、feature、shared、proto、Rust SDK、OpenSpec 和 AI context 区域，并与 `任务说明解读.md` 保持一致。
+仓库 MUST 区分 App 入口、功能模块、共享抽象、protobuf 契约、Rust SDK 代码、OpenSpec 文档和 AI 可读上下文文档。
 
-#### Scenario: 项目完成初始化
+#### Scenario: AI 读取项目结构
 
-- Given 开发者打开仓库根目录
-- When 查看顶层目录
-- Then 可以看到 `app/`、`features/`、`shared/`、`proto/`、`sdk/`、`openspec/` 和 `docs/ai-context/`
+- Given AI 助手需要理解仓库
+- When 它打开 `docs/ai-context/project-structure.md`
+- Then 它可以识别每个顶层模块及其职责
 
-### Requirement: Prompt 证据存储在 OpenSpec 中
+### Requirement: Prompt 证据 MUST 存储在 OpenSpec 中
 
-项目必须在 OpenSpec 中记录可复用的 AI Prompt、AI 输出摘要、人工决策和最终结果。
+重要 AI prompt、AI 结论、人工决策和最终结果 MUST 记录在 OpenSpec 文档或相关仓库证据中。
 
-#### Scenario: 需要审查 AI 参与证据
+#### Scenario: 功能任务被实现
 
-- Given 评审者检查 AI 参与证据
-- When 打开 `openspec/prompt.md`
-- Then 可以看到需求拆解、风险识别、接口草案、Bazel 目标规划和测试生成相关 Prompt
+- Given 一个 P0 功能任务已经实现
+- When 任务被标记完成
+- Then 相关 `tasks.md` 条目包含 PR、构建、测试、人工验收或决策证据
