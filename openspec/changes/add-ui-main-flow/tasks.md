@@ -2,12 +2,15 @@
 
 ## 1. App 壳与导航
 
-- [ ] UI-001 实现真实 Android `MainActivity`，替换当前占位 class。
-- [ ] UI-002 实现消息和邮箱底部双 Tab，并与 `AppRoutes` 保持一致。
+- [x] UI-001 实现真实 Android `MainActivity`，替换当前占位 class。
+  - 证据：`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已继承 Android `Activity`，覆盖 `onCreate` 并安装根视图；`app/src/main/AndroidManifest.xml` 已注册 launcher activity；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-001.ps1` 通过。
+- [x] UI-002 实现消息和邮箱底部双 Tab，并与 `AppRoutes` 保持一致。
+  - 证据：`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已基于 `AppRoutes.MESSAGE_LIST` 和 `AppRoutes.MAIL_LIST` 实现底部双 Tab 与内容切换；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-002.ps1` 通过。
 
 ## 2. 共享 UI 与分页
 
-- [ ] UI-003 新增统一 UI 列表/详情模型：`UnifiedListItem`、`AvatarModel`、`BadgeModel`、`DisplayStyle`、`DetailModel`、`DetailMeta`。
+- [x] UI-003 新增统一 UI 列表/详情模型：`UnifiedListItem`、`AvatarModel`、`BadgeModel`、`DisplayStyle`、`DetailModel`、`DetailMeta`。
+  - 证据：`shared/ui/UnifiedUiModels.kt` 已新增统一列表/详情模型，且不依赖 feature 或 Android framework；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-003.ps1` 通过。
 - [ ] UI-004 扩展 `PagingUiState`，补齐加载更多和加载更多失败状态。
 - [ ] TEST-003 记录并验证 UI 状态矩阵：Loading、Empty、Error、Content、LoadingMore、LoadMoreError。
 
