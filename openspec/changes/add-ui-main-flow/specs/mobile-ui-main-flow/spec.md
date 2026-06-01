@@ -12,6 +12,16 @@ Android App MUST 提供消息和邮箱两个 Tab，作为核心导航入口。
 - When 用户选择消息或邮箱 Tab
 - Then App 展示对应列表，并保持两个 Tab 的导航契约稳定
 
+### Requirement: UI 主链路 MUST 提供临时 Gradle 构建入口
+
+在完整 Bazel 接入完成前，Android UI 主链路 MUST 提供一个临时 Gradle 构建入口，用于本地编译和运行验证。
+
+#### Scenario: 开发者构建调试 APK
+
+- Given 项目已新增 Gradle 构建入口
+- When 开发者执行 `:app:assembleDebug`
+- Then Gradle 构建能够编译 `app`、`shared` 和 `features` 中的当前 Android/Kotlin 源码
+
 ### Requirement: 消息 Tab MUST 支持分页 mock 会话
 
 消息 Tab MUST 从包含 10000 条 mock 记录的分页数据源渲染飞书风格会话列表。

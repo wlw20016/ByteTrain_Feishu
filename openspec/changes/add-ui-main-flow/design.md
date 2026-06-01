@@ -4,6 +4,8 @@
 
 本 change 交付第一阶段可见 App 主链路。Rust SDK 和完整 Bazel 接入不阻塞本 change，它们分别由 `add-sdk-contract` 和 `wire-bazel-build` 跟踪。
 
+为支持第一阶段快速运行和验收 Android UI，本 change 允许新增临时 Android+Gradle 构建入口。Gradle 只承担 `:app:assembleDebug` 和本地运行验证职责，不替代 Bazel 目标规划；Bazel rules、targets、query 和构建证据仍由 `wire-bazel-build` 负责。
+
 ## 架构关系
 
 ```text
@@ -15,6 +17,22 @@ features/message, features/mail
   -> shared/list
   -> shared/ui models
 ```
+
+## 临时 Gradle 构建
+
+第一阶段先采用单 `:app` Gradle 模块，降低 Android UI 跑通成本：
+
+- 根目录新增 `settings.gradle.kts`、`build.gradle.kts` 和 `gradle.properties`。
+- `app/build.gradle.kts` 使用 Android application 和 Kotlin Android 插件。
+- `app` 模块的 main source set 临时纳入 `app/src/main/kotlin`、`../shared` 和 `../features`。
+- 后续模块边界稳定后，再拆分为独立 Gradle modules 或迁移为 Bazel targets。
+
+该方案的约束：
+
+- 不改变现有包名、目录结构和 OpenSpec change 归属。
+- `shared` 仍不能依赖具体 feature。
+- feature 模块不能反向依赖 `app`。
+- Bazel 占位文件保留，具体 Bazel 接入仍在 `wire-bazel-build` 中推进。
 
 ## UI 模型
 
