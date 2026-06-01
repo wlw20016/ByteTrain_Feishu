@@ -4,7 +4,8 @@
 
 - [x] UI-001 实现真实 Android `MainActivity`，替换当前占位 class。
   - 证据：`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已继承 Android `Activity`，覆盖 `onCreate` 并安装根视图；`app/src/main/AndroidManifest.xml` 已注册 launcher activity；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-001.ps1` 通过。
-- [ ] UI-002 实现消息和邮箱底部双 Tab，并与 `AppRoutes` 保持一致。
+- [x] UI-002 实现消息和邮箱底部双 Tab，并与 `AppRoutes` 保持一致。
+  - 证据：`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已基于 `AppRoutes.MESSAGE_LIST` 和 `AppRoutes.MAIL_LIST` 实现底部双 Tab 与内容切换；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-002.ps1` 通过。
 
 ## 2. 共享 UI 与分页
 
