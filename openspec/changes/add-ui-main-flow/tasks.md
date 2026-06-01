@@ -2,7 +2,8 @@
 
 ## 1. App 壳与导航
 
-- [ ] UI-001 实现真实 Android `MainActivity`，替换当前占位 class。
+- [x] UI-001 实现真实 Android `MainActivity`，替换当前占位 class。
+  - 证据：`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已继承 Android `Activity`，覆盖 `onCreate` 并安装根视图；`app/src/main/AndroidManifest.xml` 已注册 launcher activity；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-001.ps1` 通过。
 - [ ] UI-002 实现消息和邮箱底部双 Tab，并与 `AppRoutes` 保持一致。
 
 ## 2. 共享 UI 与分页
