@@ -16,8 +16,10 @@
 
 ## 3. 消息主链路
 
-- [ ] MSG-001 扩展 `MessageItem` 字段，包含会话名、会话类型、头像、最后消息摘要/时间、未读数、置顶、免打扰、机器人等字段。
-- [ ] MSG-002 实现 `MockMessageRepository`，生成 10000 条数据并支持 cursor 分页。
+- [x] MSG-001 扩展 `MessageItem` 字段，包含会话名、会话类型、头像、最后消息摘要/时间、未读数、置顶、免打扰、机器人等字段。
+  - 证据：`features/message/domain/MessageItem.kt` 已扩展为会话业务模型，新增 `ConversationType`，并包含会话名、会话类型、头像 URL/文字、最后消息摘要/时间、未读数、置顶、免打扰和机器人字段；`rg "\.title|\.summary|\.timestampMillis|\.unread\b|MessageItem\(" features app shared -n` 仅发现新模型与 mock 构造引用。
+- [x] MSG-002 实现 `MockMessageRepository`，生成 10000 条数据并支持 cursor 分页。
+  - 证据：`features/message/data/MockMessageRepository.kt` 已实现 `MessageRepository`，默认生成 10000 条 mock 会话数据，并基于字符串 cursor 作为起始下标返回 `MessagePage(items, nextCursor, hasMore)`。
 - [ ] MSG-003 实现 `MessageItem -> UnifiedListItem` 映射。
 - [ ] MSG-004 实现消息列表页面。
 - [ ] MSG-005 实现消息列表加载更多。
