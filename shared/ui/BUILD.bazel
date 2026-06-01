@@ -1,4 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-# Placeholder target for shared Compose UI components.
-
+# Kotlin rule wiring will be added with the Android/Bazel toolchain change.
+UI_MODEL_SRCS = [
+    "UnifiedUiModels.kt",
+]
