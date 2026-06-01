@@ -9,7 +9,8 @@
 
 ## 2. 共享 UI 与分页
 
-- [ ] UI-003 新增统一 UI 列表/详情模型：`UnifiedListItem`、`AvatarModel`、`BadgeModel`、`DisplayStyle`、`DetailModel`、`DetailMeta`。
+- [x] UI-003 新增统一 UI 列表/详情模型：`UnifiedListItem`、`AvatarModel`、`BadgeModel`、`DisplayStyle`、`DetailModel`、`DetailMeta`。
+  - 证据：`shared/ui/UnifiedUiModels.kt` 已新增统一列表/详情模型，且不依赖 feature 或 Android framework；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-003.ps1` 通过。
 - [ ] UI-004 扩展 `PagingUiState`，补齐加载更多和加载更多失败状态。
 - [ ] TEST-003 记录并验证 UI 状态矩阵：Loading、Empty、Error、Content、LoadingMore、LoadMoreError。
 
