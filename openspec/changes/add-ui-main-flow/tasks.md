@@ -22,7 +22,8 @@
   - 证据：`shared/ui/UnifiedUiModels.kt` 已新增统一列表/详情模型，且不依赖 feature 或 Android framework；当前阶段先通过 Gradle 验证，`app/build.gradle.kts` 已临时将 `../shared` 纳入 `:app` main source set，`.\gradlew.bat :app:assembleDebug` 执行通过，证明该模型可被 Android App 编译；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-003.ps1` 通过；`shared/ui/BUILD.bazel` 保留 `UnifiedUiModels.kt` 源码清单，后续真实 Bazel target 接入仍由 `wire-bazel-build` 跟踪。
 - [x] UI-004 扩展 `PagingUiState`，补齐加载更多和加载更多失败状态。
   - 证据：`shared/list/PagingModels.kt` 已将分页状态扩展为 Loading、Empty、Error、Content、LoadingMore、LoadMoreError；`LoadingMore` 和 `LoadMoreError` 均保留当前已加载 `items`，便于列表继续展示旧数据；当前阶段先通过 Gradle 验证，`.\gradlew.bat :app:assembleDebug` 执行通过；`shared/list/BUILD.bazel` 保留 `PagingModels.kt` 源码清单，后续真实 Bazel target 接入仍由 `wire-bazel-build` 跟踪。
-- [ ] TEST-003 记录并验证 UI 状态矩阵：Loading、Empty、Error、Content、LoadingMore、LoadMoreError。
+- [x] TEST-003 记录并验证 UI 状态矩阵：Loading、Empty、Error、Content、LoadingMore、LoadMoreError。
+  - 证据：`docs/ai-context/ui-state-matrix.md` 已记录六种分页 UI 状态的数据条件、UI 预期和恢复路径；`scripts/check-test-003.ps1` 已验证 `PagingUiState` 声明和状态矩阵文档覆盖 Loading、Empty、Error、Content、LoadingMore、LoadMoreError；`powershell -ExecutionPolicy Bypass -File .\scripts\check-test-003.ps1`、`.\gradlew.bat :app:assembleDebug` 和 `openspec validate add-ui-main-flow --strict` 均通过。
 
 ## 4. 消息主链路
 
