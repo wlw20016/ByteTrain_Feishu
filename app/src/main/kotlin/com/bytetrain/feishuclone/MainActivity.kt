@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.bytetrain.feishuclone.features.message.data.MockMessageRepository
+import com.bytetrain.feishuclone.features.message.domain.MessageItem
 import com.bytetrain.feishuclone.features.message.mapper.toUnifiedListItem
 import com.bytetrain.feishuclone.features.message.ui.createMessageListScreen
 import com.bytetrain.feishuclone.shared.navigation.AppRoutes
@@ -22,6 +23,9 @@ class MainActivity : Activity() {
     private lateinit var mailTab: Button
     private var currentRoute: String = AppRoutes.MESSAGE_LIST
     private val messageRepository = MockMessageRepository()
+    private val loadedMessages = mutableListOf<MessageItem>()
+    private var nextMessageCursor: String? = null
+    private var hasMoreMessages: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,18 +103,8 @@ class MainActivity : Activity() {
 
         when (currentRoute) {
             AppRoutes.MESSAGE_LIST -> {
-                val page = runSuspendBlocking {
-                    messageRepository.loadPage(MESSAGE_PAGE_SIZE, null)
-                }
-                val items = page.items.map { it.toUnifiedListItem() }
-                contentContainer.addView(createMessageListScreen(
-                    context = this,
-                    items = items,
-                    totalLabel = "Showing ${items.size} of 10000 mock conversations",
-                ), LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                ))
+                ensureInitialMessagesLoaded()
+                renderMessageList()
             }
             AppRoutes.MAIL_LIST -> {
                 contentContainer.addView(createMailPlaceholder(), LinearLayout.LayoutParams(
@@ -122,6 +116,45 @@ class MainActivity : Activity() {
 
         messageTab.isSelected = currentRoute == AppRoutes.MESSAGE_LIST
         mailTab.isSelected = currentRoute == AppRoutes.MAIL_LIST
+    }
+
+    private fun ensureInitialMessagesLoaded() {
+        if (loadedMessages.isNotEmpty() || !hasMoreMessages) {
+            return
+        }
+
+        loadNextMessagePage()
+    }
+
+    private fun loadNextMessagePage() {
+        if (!hasMoreMessages) {
+            return
+        }
+
+        val page = runSuspendBlocking {
+            messageRepository.loadPage(MESSAGE_PAGE_SIZE, nextMessageCursor)
+        }
+        loadedMessages += page.items
+        nextMessageCursor = page.nextCursor
+        hasMoreMessages = page.hasMore
+    }
+
+    private fun renderMessageList() {
+        val items = loadedMessages.map { it.toUnifiedListItem() }
+        contentContainer.removeAllViews()
+        contentContainer.addView(createMessageListScreen(
+            context = this,
+            items = items,
+            totalLabel = "Showing ${items.size} of 10000 mock conversations",
+            hasMore = hasMoreMessages,
+            onLoadMore = {
+                loadNextMessagePage()
+                renderMessageList()
+            },
+        ), LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        ))
     }
 
     private fun createMailPlaceholder(): LinearLayout =

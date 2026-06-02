@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -16,6 +17,8 @@ fun createMessageListScreen(
     context: Context,
     items: List<UnifiedListItem>,
     totalLabel: String,
+    hasMore: Boolean,
+    onLoadMore: () -> Unit,
 ): View {
     val density = context.resources.displayMetrics.density
 
@@ -30,6 +33,8 @@ fun createMessageListScreen(
             items.forEach { item ->
                 addView(createMessageRow(context, density, item))
             }
+
+            addView(createLoadMoreFooter(context, density, hasMore, onLoadMore))
         })
     }
 }
@@ -157,6 +162,35 @@ private fun createBadgeRow(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply {
                 rightMargin = dp(density, 6)
+            })
+        }
+    }
+
+private fun createLoadMoreFooter(
+    context: Context,
+    density: Float,
+    hasMore: Boolean,
+    onLoadMore: () -> Unit,
+): View =
+    LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER
+        setPadding(0, dp(density, 12), 0, dp(density, 8))
+
+        if (hasMore) {
+            addView(Button(context).apply {
+                text = "Load more"
+                setOnClickListener { onLoadMore() }
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ))
+        } else {
+            addView(TextView(context).apply {
+                text = "No more messages"
+                textSize = 12f
+                gravity = Gravity.CENTER
+                setTextColor(0xFF8A94A6.toInt())
             })
         }
     }
