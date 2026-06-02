@@ -13,8 +13,8 @@
   - 证据：已新增 `settings.gradle.kts`、根 `build.gradle.kts`、`gradle.properties`、`app/build.gradle.kts` 和 Gradle Wrapper；`app` 模块能够编译当前 `MainActivity`、`shared` 和 `features` 源码；`.\gradlew.bat :app:assembleDebug` 执行通过，结果为 `BUILD SUCCESSFUL`。
 - [x] BUILD-002 配置 `app` 模块 sourceSets，临时纳入 `shared/` 和 `features/` 源码。
   - 证据：`app/build.gradle.kts` 的 `android.sourceSets.main` 已将 `src/main/kotlin`、`../shared`、`../features` 纳入 `java.srcDirs`；未改变现有包名和模块目录；`.\gradlew.bat :app:assembleDebug` 执行通过，证明当前 `app`、`shared` 和 `features` 源码可由临时单 `:app` Gradle 模块编译。
-- [ ] BUILD-003 记录 Gradle 到 Bazel 的过渡边界。
-  - 验收：在 `docs/ai-context/build-commands.md` 或本文件中说明 Gradle 仅用于第一阶段 Android UI 运行验证；Bazel 仍由 `wire-bazel-build` change 跟踪，不在本 change 中完成 Bazel rules 接入。
+- [x] BUILD-003 记录 Gradle 到 Bazel 的过渡边界。
+  - 证据：`docs/ai-context/build-commands.md` 已新增“Gradle 到 Bazel 的过渡边界”，说明 Gradle 仅用于第一阶段 Android UI 本地编译、打包和运行验证；Bazel rules、targets、query、cache、proto 和 Rust SDK 构建仍由 `wire-bazel-build` change 跟踪；本 change 不完成 Bazel rules 接入。
 
 ## 3. 共享 UI 与分页
 
