@@ -19,7 +19,7 @@
 ## 3. 共享 UI 与分页
 
 - [x] UI-003 新增统一 UI 列表/详情模型：`UnifiedListItem`、`AvatarModel`、`BadgeModel`、`DisplayStyle`、`DetailModel`、`DetailMeta`。
-  - 证据：`shared/ui/UnifiedUiModels.kt` 已新增统一列表/详情模型，且不依赖 feature 或 Android framework；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-003.ps1` 通过。
+  - 证据：`shared/ui/UnifiedUiModels.kt` 已新增统一列表/详情模型，且不依赖 feature 或 Android framework；当前阶段先通过 Gradle 验证，`app/build.gradle.kts` 已临时将 `../shared` 纳入 `:app` main source set，`.\gradlew.bat :app:assembleDebug` 执行通过，证明该模型可被 Android App 编译；`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-003.ps1` 通过；`shared/ui/BUILD.bazel` 保留 `UnifiedUiModels.kt` 源码清单，后续真实 Bazel target 接入仍由 `wire-bazel-build` 跟踪。
 - [ ] UI-004 扩展 `PagingUiState`，补齐加载更多和加载更多失败状态。
 - [ ] TEST-003 记录并验证 UI 状态矩阵：Loading、Empty、Error、Content、LoadingMore、LoadMoreError。
 
