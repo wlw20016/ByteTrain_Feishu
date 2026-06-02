@@ -1,4 +1,15 @@
 package(default_visibility = ["//visibility:public"])
 
-# Placeholder targets. Kotlin and Android rules will be wired in later changes.
+# Kotlin and Android rules will be wired in later changes.
+MESSAGE_DOMAIN_SRCS = [
+    "domain/MessageItem.kt",
+    "domain/MessageRepository.kt",
+]
 
+MESSAGE_DATA_SRCS = [
+    "data/MockMessageRepository.kt",
+]
+
+MESSAGE_MAPPER_SRCS = [
+    "mapper/MessageUiMapper.kt",
+]
