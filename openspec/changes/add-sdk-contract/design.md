@@ -40,6 +40,21 @@ UI 继续依赖 repository 接口。SDK 集成隐藏在 adapter 后面：
 
 这样 UI 代码不依赖 SDK 传输细节。
 
+异步边界约定：
+
+- Kotlin adapter 对外只暴露既有 `suspend fun loadPage(pageSize, cursor)` repository 接口。
+- adapter 在 `Dispatchers.IO` 或等价后台执行上下文调用 SDK，避免 UI 线程直接阻塞。
+- SDK 返回的 protobuf/Rust DTO 在 adapter 内映射为 Kotlin 领域模型，UI 不持有 SDK 内部类型。
+- `cursor` 由 SDK 签发，Kotlin adapter 仅透传 `nextCursor`，不解析、不拼接、不自行生成 cursor。
+- SDK-backed repository 接入完成前，Kotlin mock repository 继续作为可切换回退路径。
+
 ## 错误模型
 
 SDK 错误应使用结构化错误类型表达，并能映射为 UI 错误文案，避免 UI 泄漏底层实现细节。
+
+错误映射策略：
+
+- `InvalidPageSize` 映射为 repository 层的分页参数错误，可在 UI 显示为“分页参数无效”。
+- `InvalidCursor` 和 `CursorOutOfRange` 映射为分页状态错误，adapter 可清空 cursor 后重新请求第一页或向 UI 返回可恢复错误。
+- 网络、FFI 或序列化错误在 SDK 集成阶段统一包装为 repository 层数据源错误。
+- UI 文案不包含底层 cursor、FFI、protobuf 或 Rust 错误细节；详细错误仅用于日志和调试证据。

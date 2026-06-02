@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package bytetrain.feed;
 
+import "proto/paging.proto";
+
 message MailItem {
   string id = 1;
   string sender = 2;
@@ -11,3 +13,7 @@ message MailItem {
   bool unread = 6;
 }
 
+message MailPageResponse {
+  repeated MailItem items = 1;
+  PageInfo page_info = 2;
+}
