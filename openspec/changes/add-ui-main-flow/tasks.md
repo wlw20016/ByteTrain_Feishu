@@ -43,7 +43,11 @@
 ## 5. 邮箱主链路
 
 - [ ] MAIL-001 扩展 `MailItem` 字段，包含发件人、主题、摘要、接收时间、未读、附件、邮件类型、操作文案等字段。
+  - 文档要求：`MailItem` MUST 保留 `id`、`sender`、`subject`、`preview`、`timestampMillis`、`unread` 作为基础字段，并新增附件、邮件类型和操作文案字段，以支撑 QQ 邮箱提醒风格卡片和详情元信息渲染。
+  - 验收要求：字段命名 MUST 与 Kotlin 领域模型保持一致；邮件类型 SHOULD 使用枚举表达；附件信息 SHOULD 能区分无附件和有附件数量；操作文案 MUST 能直接映射到 `UnifiedListItem` 的 badge/action 展示。
 - [ ] MAIL-002 实现 `MockMailRepository`，生成 10000 条数据并支持 cursor 分页。
+  - 文档要求：`MockMailRepository` MUST 实现 `MailRepository.loadPage(pageSize, cursor)`，默认生成确定性的 10000 条邮件数据，并返回 `MailPage(items, nextCursor, hasMore)`。
+  - 验收要求：分页行为 MUST 与 `MockMessageRepository` 保持一致；`cursor == null` 或空字符串表示第一页；合法 cursor 表示起始下标；最后一页 MUST 返回 `hasMore = false` 且 `nextCursor = null`；非法 cursor 不应导致 UI 崩溃。
 - [ ] MAIL-003 实现 `MailItem -> UnifiedListItem` 映射。
 - [ ] MAIL-004 实现邮箱卡片列表页面，依赖 `BUILD-002` 提供可编译运行的 Android UI 验证入口。
 - [ ] MAIL-005 实现邮箱列表加载更多。
