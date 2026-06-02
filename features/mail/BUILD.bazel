@@ -9,3 +9,7 @@ MAIL_DOMAIN_SRCS = [
 MAIL_MAPPER_SRCS = [
     "mapper/MailUiMapper.kt",
 ]
+
+MAIL_UI_SRCS = [
+    "ui/MailListScreen.kt",
+]

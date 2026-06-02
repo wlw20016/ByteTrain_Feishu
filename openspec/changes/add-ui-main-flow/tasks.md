@@ -51,7 +51,8 @@
   - 验收要求：分页行为 MUST 与 `MockMessageRepository` 保持一致；`cursor == null` 或空字符串表示第一页；合法 cursor 表示起始下标；最后一页 MUST 返回 `hasMore = false` 且 `nextCursor = null`；非法 cursor 不应导致 UI 崩溃。
 - [x] MAIL-003 实现 `MailItem -> UnifiedListItem` 映射。
   - 证据：`features/mail/mapper/MailUiMapper.kt` 已新增 `MailItem.toUnifiedListItem()`，将主题、摘要、接收时间、发件人头像、未读、附件数量、邮件类型、操作文案和详情元信息映射到 `UnifiedListItem`；`features/mail/BUILD.bazel` 已记录 `mapper/MailUiMapper.kt`；`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-003.ps1` 通过。
-- [ ] MAIL-004 实现邮箱卡片列表页面，依赖 `BUILD-002` 提供可编译运行的 Android UI 验证入口。
+- [x] MAIL-004 实现邮箱卡片列表页面，依赖 `BUILD-002` 提供可编译运行的 Android UI 验证入口。
+  - 证据：`features/mail/ui/MailListScreen.kt` 已新增邮箱卡片列表 View，渲染 `UnifiedListItem` 标题、摘要、时间、头像和 badges；`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已在 `AppRoutes.MAIL_LIST` 加载邮箱列表并通过 `MailItem.toUnifiedListItem()` 渲染首批预览 mock 邮件；`features/mail/BUILD.bazel` 已记录 `ui/MailListScreen.kt`；`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-004.ps1` 通过。
 - [ ] MAIL-005 实现邮箱列表加载更多。
 - [ ] MAIL-006 实现邮箱详情页。
 
