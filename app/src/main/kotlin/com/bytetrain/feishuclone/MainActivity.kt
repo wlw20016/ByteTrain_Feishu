@@ -1,12 +1,15 @@
 package com.bytetrain.feishuclone
 
 import android.app.Activity
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.TextView
+import com.bytetrain.feishuclone.features.mail.data.MockMailRepository
+import com.bytetrain.feishuclone.features.mail.domain.MailItem
+import com.bytetrain.feishuclone.features.mail.mapper.toUnifiedListItem
+import com.bytetrain.feishuclone.features.mail.ui.createMailDetailScreen
+import com.bytetrain.feishuclone.features.mail.ui.createMailListScreen
 import com.bytetrain.feishuclone.features.message.data.MockMessageRepository
 import com.bytetrain.feishuclone.features.message.domain.MessageItem
 import com.bytetrain.feishuclone.features.message.mapper.toUnifiedListItem
@@ -25,10 +28,15 @@ class MainActivity : Activity() {
     private lateinit var mailTab: Button
     private var currentRoute: String = AppRoutes.MESSAGE_LIST
     private var selectedMessageItem: UnifiedListItem? = null
+    private var selectedMailItem: UnifiedListItem? = null
     private val messageRepository = MockMessageRepository()
+    private val mailRepository = MockMailRepository()
     private val loadedMessages = mutableListOf<MessageItem>()
+    private val loadedMails = mutableListOf<MailItem>()
     private var nextMessageCursor: String? = null
+    private var nextMailCursor: String? = null
     private var hasMoreMessages: Boolean = true
+    private var hasMoreMails: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,10 +120,10 @@ class MainActivity : Activity() {
                 } ?: renderMessageList()
             }
             AppRoutes.MAIL_LIST -> {
-                contentContainer.addView(createMailPlaceholder(), LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                ))
+                ensureInitialMailsLoaded()
+                selectedMailItem?.let { selected ->
+                    renderMailDetail(selected)
+                } ?: renderMailList()
             }
         }
 
@@ -128,7 +136,16 @@ class MainActivity : Activity() {
             return
         }
 
-        loadNextMessagePage()
+        loadInitialMessagePage()
+    }
+
+    private fun loadInitialMessagePage() {
+        val page = runSuspendBlocking {
+            messageRepository.loadPage(MESSAGE_PAGE_SIZE, null)
+        }
+        loadedMessages += page.items
+        nextMessageCursor = page.nextCursor
+        hasMoreMessages = page.hasMore
     }
 
     private fun loadNextMessagePage() {
@@ -181,24 +198,76 @@ class MainActivity : Activity() {
         ))
     }
 
-    private fun createMailPlaceholder(): LinearLayout =
-        LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(0, 48, 0, 0)
+    private fun renderMailList() {
+        val items = loadedMails.map { it.toUnifiedListItem() }
+        contentContainer.removeAllViews()
+        contentContainer.addView(createMailListScreen(
+            context = this,
+            items = items,
+            totalLabel = "Showing ${items.size} of 10000 mock emails",
+            hasMore = hasMoreMails,
+            onOpenDetail = { item ->
+                selectedMailItem = item
+                renderMailDetail(item)
+            },
+            onLoadMore = {
+                loadNextMailPage()
+                renderMailList()
+            },
+        ), LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        ))
+    }
 
-            addView(TextView(context).apply {
-                text = "Mail"
-                textSize = 22f
-                typeface = Typeface.DEFAULT_BOLD
-            })
-            addView(TextView(context).apply {
-                text = "Mail list route: ${AppRoutes.MAIL_LIST}"
-                textSize = 14f
-            })
+    private fun renderMailDetail(item: UnifiedListItem) {
+        contentContainer.removeAllViews()
+        contentContainer.addView(createMailDetailScreen(
+            context = this,
+            item = item,
+            onBack = {
+                selectedMailItem = null
+                renderMailList()
+            },
+        ), LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        ))
+    }
+
+    private fun ensureInitialMailsLoaded() {
+        if (loadedMails.isNotEmpty() || !hasMoreMails) {
+            return
         }
+
+        loadInitialMailPage()
+    }
+
+    private fun loadInitialMailPage() {
+        val page = runSuspendBlocking {
+            mailRepository.loadPage(MAIL_PAGE_SIZE, null)
+        }
+        loadedMails += page.items
+        nextMailCursor = page.nextCursor
+        hasMoreMails = page.hasMore
+    }
+
+    private fun loadNextMailPage() {
+        if (!hasMoreMails) {
+            return
+        }
+
+        val page = runSuspendBlocking {
+            mailRepository.loadPage(MAIL_PAGE_SIZE, nextMailCursor)
+        }
+        loadedMails += page.items
+        nextMailCursor = page.nextCursor
+        hasMoreMails = page.hasMore
+    }
 
     companion object {
         private const val MESSAGE_PAGE_SIZE = 30
+        private const val MAIL_PAGE_SIZE = 30
     }
 }
 

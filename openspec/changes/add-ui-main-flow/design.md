@@ -50,6 +50,32 @@ features/message, features/mail
 - `MessageItem -> UnifiedListItem`
 - `MailItem -> UnifiedListItem`
 
+### MAIL-001 邮箱领域模型补充
+
+邮箱 UI 主链路以 Kotlin `MailItem` 作为 app 侧领域模型。基础字段沿用 SDK/proto 已确认的 `id`、`sender`、`subject`、`preview`、`timestampMillis` 和 `unread`，UI 阶段再补充附件、邮件类型和操作文案，避免列表和详情直接依赖 SDK 内部 mock 结构。
+
+建议字段边界：
+
+- `attachmentCount: Int`：附件数量，`0` 表示无附件。
+- `mailType: MailType`：邮件类型枚举，用于区分提醒、系统通知、协作更新、测试报告等卡片语义。
+- `actionText: String?`：可选操作文案，用于列表 badge 或详情页行动提示。
+
+`MailType` SHOULD 使用枚举而不是裸字符串，保证 mapper 和 UI 渲染分支可稳定测试。字段扩展完成后，MAIL-003 只负责把领域字段映射到共享 UI 模型，不再补充业务含义。
+
+### MAIL-002 邮箱 mock repository 补充
+
+`MockMailRepository` 是第一阶段 Android UI 主链路的数据源，职责与 `MockMessageRepository` 对齐。它 MUST 实现 `MailRepository.loadPage(pageSize, cursor)`，默认生成 10000 条确定性邮件数据，并基于 cursor 返回 `MailPage(items, nextCursor, hasMore)`。
+
+分页约定：
+
+- `cursor == null` 或空字符串表示从第 0 条开始加载。
+- 合法 cursor 表示下一页起始下标。
+- `endIndex < totalCount` 时返回 `hasMore = true` 和下一页 cursor。
+- 最后一页返回 `hasMore = false` 且 `nextCursor = null`。
+- 非法 cursor 不应让 UI 崩溃；Kotlin mock 可以回退到第一页或返回空页，但行为 MUST 在测试或验收脚本中固定。
+
+mock 数据 SHOULD 覆盖未读/已读、有附件/无附件、多种 `MailType` 和有/无 `actionText` 的组合，确保后续卡片列表、详情页和 mapper 测试能验证关键分支。
+
 ## 分页状态
 
 扩展现有 `PagingUiState<T>`，覆盖以下状态：

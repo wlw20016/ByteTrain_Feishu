@@ -61,3 +61,23 @@ UI MUST 显式表达加载、空态、错误、内容、加载更多和加载更
 - Given 列表已经有内容
 - When 下一页加载失败
 - Then 现有内容保持可见，并展示可重试的加载更多失败状态
+
+### Requirement: 邮箱领域模型 MUST 覆盖卡片和详情所需字段
+
+邮箱主链路的 Kotlin `MailItem` MUST 覆盖列表卡片和详情页渲染所需字段，包括发件人、主题、摘要、接收时间、未读、附件、邮件类型和操作文案。
+
+#### Scenario: 邮件字段映射到共享 UI 模型
+
+- Given 一条包含附件、邮件类型和操作文案的邮件领域模型
+- When mapper 将 `MailItem` 转换为 `UnifiedListItem`
+- Then 共享 UI 模型保留标题、摘要、时间、未读状态、附件提示、类型提示和操作文案所需信息
+
+### Requirement: 邮箱 mock repository MUST 提供确定性 cursor 分页
+
+邮箱主链路的 mock 数据源 MUST 默认提供 10000 条确定性邮件数据，并通过 `MailRepository.loadPage(pageSize, cursor)` 返回 cursor 分页结果。
+
+#### Scenario: 请求邮箱最后一页
+
+- Given 邮箱 mock repository 已加载到最后一页 cursor
+- When UI 请求下一页邮件
+- Then repository 返回最后一批邮件，`hasMore` 为 `false`，并且 `nextCursor` 为 `null`
