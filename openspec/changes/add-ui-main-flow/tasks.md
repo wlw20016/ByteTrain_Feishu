@@ -9,8 +9,8 @@
 
 ## 2. 临时 Gradle 构建入口
 
-- [ ] BUILD-001 新增 Android+Gradle 最小构建入口，支持 `:app:assembleDebug`。
-  - 验收：新增 `settings.gradle.kts`、根 `build.gradle.kts`、`gradle.properties` 和 `app/build.gradle.kts`；`app` 模块能够编译当前 `MainActivity`、`shared` 和 `features` 源码；记录实际执行的 Gradle 构建命令和结果。
+- [x] BUILD-001 新增 Android+Gradle 最小构建入口，支持 `:app:assembleDebug`。
+  - 证据：已新增 `settings.gradle.kts`、根 `build.gradle.kts`、`gradle.properties`、`app/build.gradle.kts` 和 Gradle Wrapper；`app` 模块能够编译当前 `MainActivity`、`shared` 和 `features` 源码；`.\gradlew.bat :app:assembleDebug` 执行通过，结果为 `BUILD SUCCESSFUL`。
 - [ ] BUILD-002 配置 `app` 模块 sourceSets，临时纳入 `shared/` 和 `features/` 源码。
   - 验收：`app/build.gradle.kts` 将 `app/src/main/kotlin`、`../shared`、`../features` 纳入 main source set；不改变现有包名和模块目录；后续可平滑拆分为独立 Gradle/Bazel targets。
 - [ ] BUILD-003 记录 Gradle 到 Bazel 的过渡边界。

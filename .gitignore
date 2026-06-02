@@ -15,6 +15,11 @@ __pycache__/
 # Bazel
 bazel-*
 
+# Gradle / Android
+.gradle/
+build/
+**/build/
+
 # Rust
 target/
 

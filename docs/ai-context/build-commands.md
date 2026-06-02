@@ -6,7 +6,7 @@
 
 `add-ui-main-flow` 阶段允许先接入临时 Android+Gradle 构建入口，用于快速验证 App UI 能编译和运行。
 
-规划中的 Gradle 命令：
+已验证的 Gradle 命令：
 
 ```bash
 ./gradlew :app:assembleDebug
@@ -15,8 +15,16 @@
 在 Windows PowerShell 中：
 
 ```powershell
-.\gradlew :app:assembleDebug
+.\gradlew.bat :app:assembleDebug
 ```
+
+BUILD-001 验证记录：
+
+- 日期：2026-06-02
+- 分支：`feature/build-001-gradle-entry`
+- 命令：`.\gradlew.bat :app:assembleDebug`
+- 结果：通过，输出包含 `BUILD SUCCESSFUL`。
+- 说明：本次新增的是单 `:app` Gradle 模块入口，`app/build.gradle.kts` 临时将 `../shared` 和 `../features` 纳入 main source set，用于第一阶段 Android UI 编译验证。
 
 Gradle 在本阶段只作为 Android UI 运行验证入口。完整 Bazel rules、targets、query 和 Bazel 构建证据仍由 `wire-bazel-build` change 跟踪。
 
