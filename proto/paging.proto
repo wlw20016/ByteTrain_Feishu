@@ -2,11 +2,24 @@ syntax = "proto3";
 
 package bytetrain.feed;
 
+// Shared page request.
+//
+// Cursor semantics:
+// - empty or omitted cursor requests the first page.
+// - non-empty cursor is an opaque SDK-issued token. The current mock SDK uses
+//   the next zero-based item offset encoded as a decimal string.
+// - clients must pass next_cursor back unchanged and must not construct cursors.
 message PageRequest {
   int32 page_size = 1;
   string cursor = 2;
 }
 
+// Shared page metadata.
+//
+// Compatibility:
+// - next_cursor is only meaningful when has_more is true.
+// - next_cursor is empty and has_more is false when no more data is available.
+// - new fields must be additive so older Kotlin clients can ignore them.
 message PageInfo {
   string next_cursor = 1;
   bool has_more = 2;
