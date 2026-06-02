@@ -11,7 +11,16 @@ sealed interface PagingUiState<out T> {
     data class Content<T>(
         val items: List<T>,
         val hasMore: Boolean,
-        val isLoadingMore: Boolean,
+    ) : PagingUiState<T>
+
+    data class LoadingMore<T>(
+        val items: List<T>,
+        val hasMore: Boolean = true,
+    ) : PagingUiState<T>
+
+    data class LoadMoreError<T>(
+        val items: List<T>,
+        val message: String,
+        val hasMore: Boolean = true,
     ) : PagingUiState<T>
 }
-
