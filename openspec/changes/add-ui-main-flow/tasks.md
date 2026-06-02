@@ -35,7 +35,8 @@
   - 证据：`features/message/ui/MessageListScreen.kt` 已新增消息列表 View，展示 `UnifiedListItem` 标题、摘要、时间、头像和 badges；`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已在 `AppRoutes.MESSAGE_LIST` 中加载 `MockMessageRepository` 第一页并通过 `MessageItem.toUnifiedListItem()` 渲染消息列表；`features/message/BUILD.bazel` 保留 `ui/MessageListScreen.kt` 源码清单，后续真实 Bazel target 接入仍由 `wire-bazel-build` 跟踪；`powershell -ExecutionPolicy Bypass -File .\scripts\check-msg-004.ps1`、`.\gradlew.bat :app:assembleDebug` 和 `openspec validate add-ui-main-flow --strict` 均通过。
 - [x] MSG-005 实现消息列表加载更多。
   - 证据：`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已维护已加载消息、`nextMessageCursor` 和 `hasMoreMessages`，并基于 `MockMessageRepository.loadPage(MESSAGE_PAGE_SIZE, nextMessageCursor)` 追加下一页；`features/message/ui/MessageListScreen.kt` 已新增 `Load more` 页脚按钮和无更多数据提示；`powershell -ExecutionPolicy Bypass -File .\scripts\check-msg-005.ps1`、`.\gradlew.bat :app:assembleDebug` 和 `openspec validate add-ui-main-flow --strict` 均通过。
-- [ ] MSG-006 实现消息详情页。
+- [x] MSG-006 实现消息详情页。
+  - 证据：`features/message/ui/MessageDetailScreen.kt` 已新增消息详情 View，展示 `UnifiedListItem.detail` 标题、正文和 meta 信息，并提供返回消息列表按钮；`features/message/ui/MessageListScreen.kt` 已支持点击消息行触发详情回调；`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已维护 `selectedMessageItem`，支持消息列表与详情页切换；`features/message/BUILD.bazel` 保留 `ui/MessageDetailScreen.kt` 源码清单；`powershell -ExecutionPolicy Bypass -File .\scripts\check-msg-006.ps1`、`.\gradlew.bat :app:assembleDebug` 和 `openspec validate add-ui-main-flow --strict` 均通过。
 
 ## 5. 邮箱主链路
 

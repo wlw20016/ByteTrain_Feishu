@@ -10,8 +10,10 @@ import android.widget.TextView
 import com.bytetrain.feishuclone.features.message.data.MockMessageRepository
 import com.bytetrain.feishuclone.features.message.domain.MessageItem
 import com.bytetrain.feishuclone.features.message.mapper.toUnifiedListItem
+import com.bytetrain.feishuclone.features.message.ui.createMessageDetailScreen
 import com.bytetrain.feishuclone.features.message.ui.createMessageListScreen
 import com.bytetrain.feishuclone.shared.navigation.AppRoutes
+import com.bytetrain.feishuclone.shared.ui.UnifiedListItem
 import java.util.concurrent.CountDownLatch
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
@@ -22,6 +24,7 @@ class MainActivity : Activity() {
     private lateinit var messageTab: Button
     private lateinit var mailTab: Button
     private var currentRoute: String = AppRoutes.MESSAGE_LIST
+    private var selectedMessageItem: UnifiedListItem? = null
     private val messageRepository = MockMessageRepository()
     private val loadedMessages = mutableListOf<MessageItem>()
     private var nextMessageCursor: String? = null
@@ -104,7 +107,9 @@ class MainActivity : Activity() {
         when (currentRoute) {
             AppRoutes.MESSAGE_LIST -> {
                 ensureInitialMessagesLoaded()
-                renderMessageList()
+                selectedMessageItem?.let { selected ->
+                    renderMessageDetail(selected)
+                } ?: renderMessageList()
             }
             AppRoutes.MAIL_LIST -> {
                 contentContainer.addView(createMailPlaceholder(), LinearLayout.LayoutParams(
@@ -147,8 +152,27 @@ class MainActivity : Activity() {
             items = items,
             totalLabel = "Showing ${items.size} of 10000 mock conversations",
             hasMore = hasMoreMessages,
+            onOpenDetail = { item ->
+                selectedMessageItem = item
+                renderMessageDetail(item)
+            },
             onLoadMore = {
                 loadNextMessagePage()
+                renderMessageList()
+            },
+        ), LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        ))
+    }
+
+    private fun renderMessageDetail(item: UnifiedListItem) {
+        contentContainer.removeAllViews()
+        contentContainer.addView(createMessageDetailScreen(
+            context = this,
+            item = item,
+            onBack = {
+                selectedMessageItem = null
                 renderMessageList()
             },
         ), LinearLayout.LayoutParams(

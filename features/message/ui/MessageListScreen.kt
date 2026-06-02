@@ -18,6 +18,7 @@ fun createMessageListScreen(
     items: List<UnifiedListItem>,
     totalLabel: String,
     hasMore: Boolean,
+    onOpenDetail: (UnifiedListItem) -> Unit,
     onLoadMore: () -> Unit,
 ): View {
     val density = context.resources.displayMetrics.density
@@ -31,7 +32,7 @@ fun createMessageListScreen(
             addView(createHeader(context, density, totalLabel))
 
             items.forEach { item ->
-                addView(createMessageRow(context, density, item))
+                addView(createMessageRow(context, density, item, onOpenDetail))
             }
 
             addView(createLoadMoreFooter(context, density, hasMore, onLoadMore))
@@ -66,11 +67,15 @@ private fun createMessageRow(
     context: Context,
     density: Float,
     item: UnifiedListItem,
+    onOpenDetail: (UnifiedListItem) -> Unit,
 ): View =
     LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setPadding(0, dp(density, 10), 0, dp(density, 10))
+        isClickable = true
+        isFocusable = true
+        setOnClickListener { onOpenDetail(item) }
 
         addView(createAvatar(context, density, item), LinearLayout.LayoutParams(
             dp(density, 44),

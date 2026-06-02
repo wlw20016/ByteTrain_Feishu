@@ -15,5 +15,6 @@ MESSAGE_MAPPER_SRCS = [
 ]
 
 MESSAGE_UI_SRCS = [
+    "ui/MessageDetailScreen.kt",
     "ui/MessageListScreen.kt",
 ]
