@@ -3,19 +3,25 @@ package com.bytetrain.feishuclone
 import android.app.Activity
 import android.graphics.Typeface
 import android.os.Bundle
-import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.bytetrain.feishuclone.features.message.data.MockMessageRepository
+import com.bytetrain.feishuclone.features.message.mapper.toUnifiedListItem
+import com.bytetrain.feishuclone.features.message.ui.createMessageListScreen
 import com.bytetrain.feishuclone.shared.navigation.AppRoutes
+import java.util.concurrent.CountDownLatch
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.startCoroutine
 
 class MainActivity : Activity() {
-    private lateinit var screenTitle: TextView
-    private lateinit var screenDescription: TextView
+    private lateinit var contentContainer: LinearLayout
     private lateinit var messageTab: Button
     private lateinit var mailTab: Button
     private var currentRoute: String = AppRoutes.MESSAGE_LIST
+    private val messageRepository = MockMessageRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +45,10 @@ class MainActivity : Activity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
             )
 
-            addView(createContentArea(), LinearLayout.LayoutParams(
+            contentContainer = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+            }
+            addView(contentContainer, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 0,
                 1f,
@@ -49,36 +58,9 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun createContentArea(): LinearLayout {
-        return LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-
-            screenTitle = TextView(context).apply {
-                textSize = 22f
-                gravity = Gravity.CENTER
-                typeface = Typeface.DEFAULT_BOLD
-            }
-            addView(screenTitle, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ))
-
-            screenDescription = TextView(context).apply {
-                textSize = 14f
-                gravity = Gravity.CENTER
-            }
-            addView(screenDescription, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ))
-        }
-    }
-
     private fun createBottomTabBar(): LinearLayout {
         return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
 
             messageTab = createTabButton("Messages", AppRoutes.MESSAGE_LIST)
             mailTab = createTabButton("Mail", AppRoutes.MAIL_LIST)
@@ -113,18 +95,74 @@ class MainActivity : Activity() {
     }
 
     private fun renderSelectedRoute() {
+        contentContainer.removeAllViews()
+
         when (currentRoute) {
             AppRoutes.MESSAGE_LIST -> {
-                screenTitle.text = "Messages"
-                screenDescription.text = "Message list route: ${AppRoutes.MESSAGE_LIST}"
+                val page = runSuspendBlocking {
+                    messageRepository.loadPage(MESSAGE_PAGE_SIZE, null)
+                }
+                val items = page.items.map { it.toUnifiedListItem() }
+                contentContainer.addView(createMessageListScreen(
+                    context = this,
+                    items = items,
+                    totalLabel = "Showing ${items.size} of 10000 mock conversations",
+                ), LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                ))
             }
             AppRoutes.MAIL_LIST -> {
-                screenTitle.text = "Mail"
-                screenDescription.text = "Mail list route: ${AppRoutes.MAIL_LIST}"
+                contentContainer.addView(createMailPlaceholder(), LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                ))
             }
         }
 
         messageTab.isSelected = currentRoute == AppRoutes.MESSAGE_LIST
         mailTab.isSelected = currentRoute == AppRoutes.MAIL_LIST
     }
+
+    private fun createMailPlaceholder(): LinearLayout =
+        LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, 48, 0, 0)
+
+            addView(TextView(context).apply {
+                text = "Mail"
+                textSize = 22f
+                typeface = Typeface.DEFAULT_BOLD
+            })
+            addView(TextView(context).apply {
+                text = "Mail list route: ${AppRoutes.MAIL_LIST}"
+                textSize = 14f
+            })
+        }
+
+    companion object {
+        private const val MESSAGE_PAGE_SIZE = 30
+    }
+}
+
+private fun <T> runSuspendBlocking(block: suspend () -> T): T {
+    var value: T? = null
+    var error: Throwable? = null
+    val latch = CountDownLatch(1)
+
+    block.startCoroutine(object : Continuation<T> {
+        override val context = EmptyCoroutineContext
+
+        override fun resumeWith(result: Result<T>) {
+            result.fold(
+                onSuccess = { value = it },
+                onFailure = { error = it },
+            )
+            latch.countDown()
+        }
+    })
+
+    latch.await()
+    error?.let { throw it }
+    return value ?: error("Suspend block completed without a value")
 }

@@ -31,7 +31,8 @@
   - 证据：`features/message/data/MockMessageRepository.kt` 已实现 `MessageRepository`，默认生成 10000 条 mock 会话数据，并基于字符串 cursor 作为起始下标返回 `MessagePage(items, nextCursor, hasMore)`。
 - [x] MSG-003 实现 `MessageItem -> UnifiedListItem` 映射。
   - 证据：`features/message/mapper/MessageUiMapper.kt` 已新增 `MessageItem.toUnifiedListItem()`，将会话名、最后消息摘要、时间、头像、未读/置顶/免打扰/机器人状态和详情元信息映射为 `UnifiedListItem`；`features/message/BUILD.bazel` 保留 `mapper/MessageUiMapper.kt` 源码清单，后续真实 Bazel target 接入仍由 `wire-bazel-build` 跟踪；`powershell -ExecutionPolicy Bypass -File .\scripts\check-msg-003.ps1`、`.\gradlew.bat :app:assembleDebug` 和 `openspec validate add-ui-main-flow --strict` 均通过。
-- [ ] MSG-004 实现消息列表页面，依赖 `BUILD-002` 提供可编译运行的 Android UI 验证入口。
+- [x] MSG-004 实现消息列表页面，依赖 `BUILD-002` 提供可编译运行的 Android UI 验证入口。
+  - 证据：`features/message/ui/MessageListScreen.kt` 已新增消息列表 View，展示 `UnifiedListItem` 标题、摘要、时间、头像和 badges；`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已在 `AppRoutes.MESSAGE_LIST` 中加载 `MockMessageRepository` 第一页并通过 `MessageItem.toUnifiedListItem()` 渲染消息列表；`features/message/BUILD.bazel` 保留 `ui/MessageListScreen.kt` 源码清单，后续真实 Bazel target 接入仍由 `wire-bazel-build` 跟踪；`powershell -ExecutionPolicy Bypass -File .\scripts\check-msg-004.ps1`、`.\gradlew.bat :app:assembleDebug` 和 `openspec validate add-ui-main-flow --strict` 均通过。
 - [ ] MSG-005 实现消息列表加载更多。
 - [ ] MSG-006 实现消息详情页。
 
