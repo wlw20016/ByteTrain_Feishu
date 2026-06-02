@@ -63,7 +63,8 @@
 
 - [x] TEST-001 添加 repository 分页测试，覆盖第一页、下一页、最后一页、非法 cursor 和空结果。
   - 证据：`docs/ai-context/repository-paging-tests.md` 已记录 Message repository 和 Mail repository 的 First page、Next page、Last page、Invalid cursor、Empty result 测试矩阵；`scripts/check-test-001.ps1` 已验证 `MockMessageRepository` 和 `MockMailRepository` 的 cursor 解析、分页切片、最后一页 `hasMore`/`nextCursor` 和空结果处理；`powershell -ExecutionPolicy Bypass -File .\scripts\check-test-001.ps1` 通过。
-- [ ] TEST-002 添加 mapper 测试，验证消息和邮箱到统一 UI 模型的关键字段映射。
+- [x] TEST-002 添加 mapper 测试，验证消息和邮箱到统一 UI 模型的关键字段映射。
+  - 证据：`docs/ai-context/mapper-field-tests.md` 已记录 Message mapper 和 Mail mapper 到 `UnifiedListItem` 的 `id`、`title`、`subtitle`、`timestampText`、`avatar`、`badges`、`displayStyle` 和 `detail` 字段矩阵；`scripts/check-test-002.ps1` 已验证 `MessageUiMapper.kt` 和 `MailUiMapper.kt` 的关键字段映射；`powershell -ExecutionPolicy Bypass -File .\scripts\check-test-002.ps1` 通过。
 - [ ] TEST-004 验证 10000 条数据滚动表现，并记录人工验收证据。
 - [ ] REL-001 完成第一阶段 UI 主链路验收，并在本文件记录证据；依赖 `BUILD-001` 提供 Gradle 构建或运行验证结果。
 
