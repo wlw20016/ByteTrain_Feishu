@@ -1,4 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-# Placeholder target for shared paging abstractions.
-
+# Kotlin rule wiring will be added with the Android/Bazel toolchain change.
+PAGING_MODEL_SRCS = [
+    "PagingModels.kt",
+]
