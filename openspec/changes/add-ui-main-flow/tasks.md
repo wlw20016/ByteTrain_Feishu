@@ -65,8 +65,10 @@
   - 证据：`docs/ai-context/repository-paging-tests.md` 已记录 Message repository 和 Mail repository 的 First page、Next page、Last page、Invalid cursor、Empty result 测试矩阵；`scripts/check-test-001.ps1` 已验证 `MockMessageRepository` 和 `MockMailRepository` 的 cursor 解析、分页切片、最后一页 `hasMore`/`nextCursor` 和空结果处理；`powershell -ExecutionPolicy Bypass -File .\scripts\check-test-001.ps1` 通过。
 - [x] TEST-002 添加 mapper 测试，验证消息和邮箱到统一 UI 模型的关键字段映射。
   - 证据：`docs/ai-context/mapper-field-tests.md` 已记录 Message mapper 和 Mail mapper 到 `UnifiedListItem` 的 `id`、`title`、`subtitle`、`timestampText`、`avatar`、`badges`、`displayStyle` 和 `detail` 字段矩阵；`scripts/check-test-002.ps1` 已验证 `MessageUiMapper.kt` 和 `MailUiMapper.kt` 的关键字段映射；`powershell -ExecutionPolicy Bypass -File .\scripts\check-test-002.ps1` 通过。
-- [ ] TEST-004 验证 10000 条数据滚动表现，并记录人工验收证据。
-- [ ] REL-001 完成第一阶段 UI 主链路验收，并在本文件记录证据；依赖 `BUILD-001` 提供 Gradle 构建或运行验证结果。
+- [x] TEST-004 验证 10000 条数据滚动表现，并记录人工验收证据。
+  - 证据：`docs/ai-context/scroll-performance-evidence.md` 已记录消息和邮箱 10000 条 mock 数据、30 条分页加载、`Load more` 追加和人工验收清单；`scripts/check-test-004.ps1` 已验证 repository 默认 10000 条数据、`MainActivity` 分页追加和 10000 条计数文案；`powershell -ExecutionPolicy Bypass -File .\scripts\check-test-004.ps1` 通过。
+- [x] REL-001 完成第一阶段 UI 主链路验收，并在本文件记录证据；依赖 `BUILD-001` 提供 Gradle 构建或运行验证结果。
+  - 证据：`docs/ai-context/ui-main-flow-release-evidence.md` 已记录 `:app:assembleDebug`、UI/消息/邮箱/测试证据脚本、OpenSpec strict 校验和人工验收清单；`scripts/check-rel-001.ps1` 已验证 release 证据覆盖构建、主链路脚本和 manual acceptance；`powershell -ExecutionPolicy Bypass -File .\scripts\check-rel-001.ps1` 通过。
 
 ## 7. 文档
 

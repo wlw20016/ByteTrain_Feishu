@@ -8,6 +8,7 @@ MESSAGE_DOMAIN_SRCS = [
 
 MESSAGE_DATA_SRCS = [
     "data/MockMessageRepository.kt",
+    "data/SdkMessageRepository.kt",
 ]
 
 MESSAGE_MAPPER_SRCS = [

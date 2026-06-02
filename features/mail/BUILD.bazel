@@ -8,6 +8,7 @@ MAIL_DOMAIN_SRCS = [
 
 MAIL_DATA_SRCS = [
     "data/MockMailRepository.kt",
+    "data/SdkMailRepository.kt",
 ]
 
 MAIL_MAPPER_SRCS = [

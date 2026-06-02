@@ -15,8 +15,10 @@
 ## 3. 异步与 Adapter 边界
 
 - [x] SDK-005 定义 Kotlin 到 SDK 的异步边界和错误映射策略。
-- [ ] SDK-006 在 UI mock 主链路稳定后实现 SDK-backed repository adapter。
-- [ ] 在 SDK 集成验证完成前保留 Kotlin mock repository 作为回退路径。
+- [x] SDK-006 在 UI mock 主链路稳定后实现 SDK-backed repository adapter。
+  - 证据：`features/message/data/SdkMessageRepository.kt` 和 `features/mail/data/SdkMailRepository.kt` 已实现 SDK-backed repository adapter 边界，UI 仍依赖 `MessageRepository`/`MailRepository`；`docs/ai-context/sdk-adapter-evidence.md` 已记录 SDK client、DTO 到领域模型映射和 fallback 策略；`powershell -ExecutionPolicy Bypass -File .\scripts\check-sdk-006.ps1` 通过。
+- [x] 在 SDK 集成验证完成前保留 Kotlin mock repository 作为回退路径。
+  - 证据：`SdkMessageRepository` 和 `SdkMailRepository` 均保留可选 `fallbackRepository`，SDK 加载失败时可委托 Kotlin mock repository；`MockMessageRepository` 和 `MockMailRepository` 仍保留在 `MESSAGE_DATA_SRCS`/`MAIL_DATA_SRCS` 中。
 
 ## 4. 证据
 
