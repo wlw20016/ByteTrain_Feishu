@@ -64,8 +64,8 @@ if (-not (Test-Path $mainActivityPath)) {
             Pattern = "import\s+com\.bytetrain\.feishuclone\.features\.mail\.domain\.MailItem"
         },
         @{
-            Name = "MainActivity imports MailType"
-            Pattern = "import\s+com\.bytetrain\.feishuclone\.features\.mail\.domain\.MailType"
+            Name = "MainActivity imports MockMailRepository"
+            Pattern = "import\s+com\.bytetrain\.feishuclone\.features\.mail\.data\.MockMailRepository"
         },
         @{
             Name = "MainActivity imports mail mapper"

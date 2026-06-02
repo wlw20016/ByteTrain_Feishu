@@ -6,10 +6,15 @@ MAIL_DOMAIN_SRCS = [
     "domain/MailRepository.kt",
 ]
 
+MAIL_DATA_SRCS = [
+    "data/MockMailRepository.kt",
+]
+
 MAIL_MAPPER_SRCS = [
     "mapper/MailUiMapper.kt",
 ]
 
 MAIL_UI_SRCS = [
+    "ui/MailDetailScreen.kt",
     "ui/MailListScreen.kt",
 ]

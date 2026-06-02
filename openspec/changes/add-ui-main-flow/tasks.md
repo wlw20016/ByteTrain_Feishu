@@ -46,15 +46,18 @@
   - 文档要求：`MailItem` MUST 保留 `id`、`sender`、`subject`、`preview`、`timestampMillis`、`unread` 作为基础字段，并新增附件、邮件类型和操作文案字段，以支撑 QQ 邮箱提醒风格卡片和详情元信息渲染。
   - 验收要求：字段命名 MUST 与 Kotlin 领域模型保持一致；邮件类型 SHOULD 使用枚举表达；附件信息 SHOULD 能区分无附件和有附件数量；操作文案 MUST 能直接映射到 `UnifiedListItem` 的 badge/action 展示。
   - 证据：`features/mail/domain/MailItem.kt` 已保留基础字段，并新增 `attachmentCount`、`mailType`、`actionText` 和 `MailType` 枚举；`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-003.ps1` 通过。
-- [ ] MAIL-002 实现 `MockMailRepository`，生成 10000 条数据并支持 cursor 分页。
+- [x] MAIL-002 实现 `MockMailRepository`，生成 10000 条数据并支持 cursor 分页。
   - 文档要求：`MockMailRepository` MUST 实现 `MailRepository.loadPage(pageSize, cursor)`，默认生成确定性的 10000 条邮件数据，并返回 `MailPage(items, nextCursor, hasMore)`。
   - 验收要求：分页行为 MUST 与 `MockMessageRepository` 保持一致；`cursor == null` 或空字符串表示第一页；合法 cursor 表示起始下标；最后一页 MUST 返回 `hasMore = false` 且 `nextCursor = null`；非法 cursor 不应导致 UI 崩溃。
+  - 证据：`features/mail/data/MockMailRepository.kt` 已实现 `MailRepository`，默认生成 10000 条确定性邮件数据，并基于 cursor 返回 `MailPage(items, nextCursor, hasMore)`；`features/mail/BUILD.bazel` 已记录 `data/MockMailRepository.kt`；`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-002.ps1` 通过。
 - [x] MAIL-003 实现 `MailItem -> UnifiedListItem` 映射。
   - 证据：`features/mail/mapper/MailUiMapper.kt` 已新增 `MailItem.toUnifiedListItem()`，将主题、摘要、接收时间、发件人头像、未读、附件数量、邮件类型、操作文案和详情元信息映射到 `UnifiedListItem`；`features/mail/BUILD.bazel` 已记录 `mapper/MailUiMapper.kt`；`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-003.ps1` 通过。
 - [x] MAIL-004 实现邮箱卡片列表页面，依赖 `BUILD-002` 提供可编译运行的 Android UI 验证入口。
   - 证据：`features/mail/ui/MailListScreen.kt` 已新增邮箱卡片列表 View，渲染 `UnifiedListItem` 标题、摘要、时间、头像和 badges；`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已在 `AppRoutes.MAIL_LIST` 加载邮箱列表并通过 `MailItem.toUnifiedListItem()` 渲染首批预览 mock 邮件；`features/mail/BUILD.bazel` 已记录 `ui/MailListScreen.kt`；`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-004.ps1` 通过。
-- [ ] MAIL-005 实现邮箱列表加载更多。
-- [ ] MAIL-006 实现邮箱详情页。
+- [x] MAIL-005 实现邮箱列表加载更多。
+  - 证据：`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已维护 `loadedMails`、`nextMailCursor` 和 `hasMoreMails`，并通过 `MockMailRepository.loadPage(MAIL_PAGE_SIZE, nextMailCursor)` 追加下一页；`features/mail/ui/MailListScreen.kt` 已新增 `Load more` 页脚按钮和无更多数据提示；`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-005.ps1` 通过。
+- [x] MAIL-006 实现邮箱详情页。
+  - 证据：`features/mail/ui/MailDetailScreen.kt` 已新增邮箱详情 View，展示 `UnifiedListItem.detail` 标题、正文和 meta 信息，并提供返回邮箱列表按钮；`features/mail/ui/MailListScreen.kt` 已支持点击邮箱卡片触发详情回调；`app/src/main/kotlin/com/bytetrain/feishuclone/MainActivity.kt` 已维护 `selectedMailItem`，支持邮箱列表与详情页切换；`features/mail/BUILD.bazel` 已记录 `ui/MailDetailScreen.kt`；`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-006.ps1` 通过。
 
 ## 6. 测试与证据
 

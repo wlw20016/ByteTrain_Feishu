@@ -5,9 +5,10 @@ import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import com.bytetrain.feishuclone.features.mail.data.MockMailRepository
 import com.bytetrain.feishuclone.features.mail.domain.MailItem
-import com.bytetrain.feishuclone.features.mail.domain.MailType
 import com.bytetrain.feishuclone.features.mail.mapper.toUnifiedListItem
+import com.bytetrain.feishuclone.features.mail.ui.createMailDetailScreen
 import com.bytetrain.feishuclone.features.mail.ui.createMailListScreen
 import com.bytetrain.feishuclone.features.message.data.MockMessageRepository
 import com.bytetrain.feishuclone.features.message.domain.MessageItem
@@ -27,11 +28,15 @@ class MainActivity : Activity() {
     private lateinit var mailTab: Button
     private var currentRoute: String = AppRoutes.MESSAGE_LIST
     private var selectedMessageItem: UnifiedListItem? = null
+    private var selectedMailItem: UnifiedListItem? = null
     private val messageRepository = MockMessageRepository()
+    private val mailRepository = MockMailRepository()
     private val loadedMessages = mutableListOf<MessageItem>()
-    private val loadedMails = createInitialMailItems().toMutableList()
+    private val loadedMails = mutableListOf<MailItem>()
     private var nextMessageCursor: String? = null
+    private var nextMailCursor: String? = null
     private var hasMoreMessages: Boolean = true
+    private var hasMoreMails: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,7 +120,10 @@ class MainActivity : Activity() {
                 } ?: renderMessageList()
             }
             AppRoutes.MAIL_LIST -> {
-                renderMailList()
+                ensureInitialMailsLoaded()
+                selectedMailItem?.let { selected ->
+                    renderMailDetail(selected)
+                } ?: renderMailList()
             }
         }
 
@@ -196,83 +204,72 @@ class MainActivity : Activity() {
         contentContainer.addView(createMailListScreen(
             context = this,
             items = items,
-            totalLabel = "Showing ${items.size} preview mock emails",
-            onOpenDetail = {},
+            totalLabel = "Showing ${items.size} of 10000 mock emails",
+            hasMore = hasMoreMails,
+            onOpenDetail = { item ->
+                selectedMailItem = item
+                renderMailDetail(item)
+            },
+            onLoadMore = {
+                loadNextMailPage()
+                renderMailList()
+            },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
         ))
     }
 
+    private fun renderMailDetail(item: UnifiedListItem) {
+        contentContainer.removeAllViews()
+        contentContainer.addView(createMailDetailScreen(
+            context = this,
+            item = item,
+            onBack = {
+                selectedMailItem = null
+                renderMailList()
+            },
+        ), LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        ))
+    }
+
+    private fun ensureInitialMailsLoaded() {
+        if (loadedMails.isNotEmpty() || !hasMoreMails) {
+            return
+        }
+
+        loadInitialMailPage()
+    }
+
+    private fun loadInitialMailPage() {
+        val page = runSuspendBlocking {
+            mailRepository.loadPage(MAIL_PAGE_SIZE, null)
+        }
+        loadedMails += page.items
+        nextMailCursor = page.nextCursor
+        hasMoreMails = page.hasMore
+    }
+
+    private fun loadNextMailPage() {
+        if (!hasMoreMails) {
+            return
+        }
+
+        val page = runSuspendBlocking {
+            mailRepository.loadPage(MAIL_PAGE_SIZE, nextMailCursor)
+        }
+        loadedMails += page.items
+        nextMailCursor = page.nextCursor
+        hasMoreMails = page.hasMore
+    }
+
     companion object {
         private const val MESSAGE_PAGE_SIZE = 30
+        private const val MAIL_PAGE_SIZE = 30
     }
 }
-
-private fun createInitialMailItems(): List<MailItem> =
-    listOf(
-        MailItem(
-            id = "mail-preview-1",
-            sender = "Feishu Updates",
-            subject = "Weekly product digest #1",
-            preview = "Here are the highlights and decisions from this week.",
-            timestampMillis = mailTimeAt(0),
-            unread = true,
-            attachmentCount = 2,
-            mailType = MailType.UPDATE,
-            actionText = "Review",
-        ),
-        MailItem(
-            id = "mail-preview-2",
-            sender = "Product Ops",
-            subject = "Action required for release #2",
-            preview = "Please confirm owners before the release window closes.",
-            timestampMillis = mailTimeAt(1),
-            unread = true,
-            attachmentCount = 0,
-            mailType = MailType.REMINDER,
-            actionText = "Confirm",
-        ),
-        MailItem(
-            id = "mail-preview-3",
-            sender = "Design Team",
-            subject = "Design review notes #3",
-            preview = "The latest interaction notes are ready for your pass.",
-            timestampMillis = mailTimeAt(2),
-            unread = false,
-            attachmentCount = 1,
-            mailType = MailType.COLLABORATION,
-            actionText = null,
-        ),
-        MailItem(
-            id = "mail-preview-4",
-            sender = "QA Desk",
-            subject = "Regression test summary #4",
-            preview = "Smoke coverage passed for the message main flow.",
-            timestampMillis = mailTimeAt(3),
-            unread = false,
-            attachmentCount = 3,
-            mailType = MailType.REPORT,
-            actionText = "Open report",
-        ),
-        MailItem(
-            id = "mail-preview-5",
-            sender = "Build System",
-            subject = "Build pipeline report #5",
-            preview = "The latest debug build artifact is available.",
-            timestampMillis = mailTimeAt(4),
-            unread = false,
-            attachmentCount = 0,
-            mailType = MailType.SYSTEM,
-            actionText = null,
-        ),
-    )
-
-private fun mailTimeAt(index: Int): Long =
-    MAIL_BASE_TIME_MILLIS - index * MAIL_INTERVAL_MILLIS
-
-private const val MAIL_BASE_TIME_MILLIS = 1_717_200_000_000L
-private const val MAIL_INTERVAL_MILLIS = 300_000L
 
 private fun <T> runSuspendBlocking(block: suspend () -> T): T {
     var value: T? = null
