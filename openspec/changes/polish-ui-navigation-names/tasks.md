@@ -9,9 +9,9 @@
 - [x] UI-006 Remove visible numeric suffixes from mock message conversation names.
   - Evidence: `MockMessageRepository.conversationNameFor` now returns the selected single, group, or bot name directly; stable uniqueness remains in `MessageItem.id`.
 - [x] UI-008 Rework message detail into a mobile chat view without internal debug metadata.
-  - Evidence: `MessageDetailScreen` now renders a conversation header, incoming/outgoing chat bubbles, and a composer bar; it no longer renders `item.detail.metas` or an in-page `Back to messages` button.
+  - Evidence: `MessageDetailScreen` now renders a conversation header with a compact back affordance, incoming/outgoing chat bubbles, and a composer bar; it no longer renders `item.detail.metas` or an in-page `Back to messages` button.
 - [x] UI-009 Use Android system back navigation for detail screens and preserve list scroll position.
-  - Evidence: `MainActivity.onBackPressed` clears selected message/mail detail state, message and mail lists pass the current `ScrollView.scrollY` when opening detail, and both list screens restore `initialScrollY` after rendering.
+  - Evidence: `MainActivity` registers Android 13+ `OnBackInvokedDispatcher` callbacks, keeps legacy `onBackPressed` fallback, and handles emulator toolbar / keyboard `KEYCODE_BACK` events through `dispatchKeyEvent`; all paths clear selected message/mail detail state. Message and mail lists pass the current `ScrollView.scrollY` when opening detail, and both list screens restore `initialScrollY` after rendering.
 
 ## 2. Verification
 

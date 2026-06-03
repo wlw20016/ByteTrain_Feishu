@@ -18,6 +18,26 @@ if ($mainActivity -notmatch 'override\s+fun\s+onBackPressed\s*\(') {
     $failures.Add("Activity handles Android system back navigation")
 }
 
+if ($mainActivity -notmatch 'OnBackInvokedDispatcher') {
+    $failures.Add("Activity registers Android 13+ system back callback")
+}
+
+if ($mainActivity -notmatch 'registerOnBackInvokedCallback') {
+    $failures.Add("Activity wires OnBackInvokedDispatcher callback")
+}
+
+if ($mainActivity -notmatch 'handleBackNavigation') {
+    $failures.Add("System back logic is shared across modern and legacy callbacks")
+}
+
+if ($mainActivity -notmatch 'override\s+fun\s+dispatchKeyEvent\s*\(') {
+    $failures.Add("Activity handles emulator toolbar/key BACK events")
+}
+
+if ($mainActivity -notmatch 'KeyEvent\.KEYCODE_BACK') {
+    $failures.Add("Activity checks KEYCODE_BACK fallback")
+}
+
 if ($mainActivity -notmatch 'messageListScrollY\s*:\s*Int') {
     $failures.Add("MainActivity stores message list scroll position")
 }
@@ -52,6 +72,10 @@ if ($messageDetail -match 'import\s+android\.widget\.Button') {
 
 if ($messageDetail -match 'Back to messages') {
     $failures.Add("Message detail removes in-page Back to messages button")
+}
+
+if ($messageDetail -notmatch 'setOnClickListener\s*\{\s*onBack\s*\(\s*\)\s*\}') {
+    $failures.Add("Message detail includes a compact header back affordance")
 }
 
 if ($messageDetail -match 'item\.detail\.metas\.forEach') {

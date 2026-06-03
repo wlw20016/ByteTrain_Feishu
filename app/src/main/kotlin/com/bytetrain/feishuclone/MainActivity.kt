@@ -3,10 +3,15 @@ package com.bytetrain.feishuclone
 import android.app.Activity
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -50,21 +55,52 @@ class MainActivity : Activity() {
 
         title = "ByteTrain Feishu"
         setContentView(createRootView())
+        registerSystemBackCallback()
         renderSelectedRoute()
     }
 
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
-        when {
+        if (!handleBackNavigation()) {
+            super.onBackPressed()
+        }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+            return handleBackNavigation() || super.dispatchKeyEvent(event)
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    private fun registerSystemBackCallback() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                OnBackInvokedCallback {
+                    if (!handleBackNavigation()) {
+                        finish()
+                    }
+                },
+            )
+        }
+    }
+
+    private fun handleBackNavigation(): Boolean {
+        return when {
             currentRoute == AppRoutes.MESSAGE_LIST && selectedMessageItem != null -> {
+                Log.d(TAG, "Back navigation: message detail -> message list")
                 selectedMessageItem = null
                 renderMessageList()
+                true
             }
             currentRoute == AppRoutes.MAIL_LIST && selectedMailItem != null -> {
+                Log.d(TAG, "Back navigation: mail detail -> mail list")
                 selectedMailItem = null
                 renderMailList()
+                true
             }
-            else -> super.onBackPressed()
+            else -> false
         }
     }
 
@@ -262,6 +298,10 @@ class MainActivity : Activity() {
         contentContainer.addView(createMessageDetailScreen(
             context = this,
             item = item,
+            onBack = {
+                selectedMessageItem = null
+                renderMessageList()
+            },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -339,6 +379,7 @@ class MainActivity : Activity() {
         private const val SELECTED_TAB_COLOR = 0xFF2F80ED.toInt()
         private const val UNSELECTED_TAB_COLOR = 0xFF8A94A6.toInt()
         private const val SELECTED_TAB_BACKGROUND_COLOR = 0xFFEAF2FF.toInt()
+        private const val TAG = "ByteTrainMainActivity"
     }
 }
 

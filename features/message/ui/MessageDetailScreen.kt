@@ -14,6 +14,7 @@ import com.bytetrain.feishuclone.shared.ui.UnifiedListItem
 fun createMessageDetailScreen(
     context: Context,
     item: UnifiedListItem,
+    onBack: () -> Unit,
 ): View {
     val density = context.resources.displayMetrics.density
 
@@ -21,7 +22,7 @@ fun createMessageDetailScreen(
         orientation = LinearLayout.VERTICAL
         setBackgroundColor(0xFFF6F7F9.toInt())
 
-        addView(createConversationHeader(context, density, item), LinearLayout.LayoutParams(
+        addView(createConversationHeader(context, density, item, onBack), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
         ))
@@ -55,12 +56,29 @@ private fun createConversationHeader(
     context: Context,
     density: Float,
     item: UnifiedListItem,
+    onBack: () -> Unit,
 ): View =
     LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setPadding(dp(density, 14), dp(density, 10), dp(density, 14), dp(density, 10))
         setBackgroundColor(0xFFFFFFFF.toInt())
+
+        addView(TextView(context).apply {
+            text = "<"
+            textSize = 22f
+            gravity = Gravity.CENTER
+            setTextColor(0xFF111827.toInt())
+            isClickable = true
+            isFocusable = true
+            contentDescription = "返回消息列表"
+            setOnClickListener { onBack() }
+        }, LinearLayout.LayoutParams(
+            dp(density, 36),
+            dp(density, 36),
+        ).apply {
+            rightMargin = dp(density, 6)
+        })
 
         addView(TextView(context).apply {
             text = item.title

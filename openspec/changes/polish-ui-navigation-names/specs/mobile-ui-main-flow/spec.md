@@ -44,6 +44,7 @@ The message detail screen MUST present conversation content as a chat-style view
 - Then the content is shown as chat bubbles with a composer area
 - And internal fields such as type, unread count, pinned state, muted state, and bot state are not shown as meta rows
 - And there is no in-page `Back to messages` button
+- And the chat header provides a compact back affordance instead of a full-width back button
 
 ### Requirement: Detail navigation MUST use Android system back and preserve list position
 
