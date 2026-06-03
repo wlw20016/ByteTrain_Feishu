@@ -77,8 +77,8 @@ class MainActivity : Activity() {
         return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
 
-            messageTab = createTabButton("Messages", AppRoutes.MESSAGE_LIST)
-            mailTab = createTabButton("Mail", AppRoutes.MAIL_LIST)
+            messageTab = createTabButton("Messages", AppRoutes.MESSAGE_LIST, R.drawable.ic_messages_24)
+            mailTab = createTabButton("Mail", AppRoutes.MAIL_LIST, R.drawable.ic_mail_24)
 
             addView(messageTab, LinearLayout.LayoutParams(
                 0,
@@ -93,9 +93,11 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun createTabButton(label: String, route: String): Button {
+    private fun createTabButton(label: String, route: String, iconResId: Int): Button {
         return Button(this).apply {
-            text = label
+            text = ""
+            contentDescription = label
+            setCompoundDrawablesWithIntrinsicBounds(0, iconResId, 0, 0)
             setOnClickListener { selectRoute(route) }
         }
     }

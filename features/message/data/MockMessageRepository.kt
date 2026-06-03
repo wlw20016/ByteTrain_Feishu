@@ -58,9 +58,9 @@ class MockMessageRepository(
 
     private fun conversationNameFor(index: Int, type: ConversationType): String =
         when (type) {
-            ConversationType.SINGLE -> "${singleNames[index % singleNames.size]} ${index + 1}"
-            ConversationType.GROUP -> "${groupNames[index % groupNames.size]} ${index + 1}"
-            ConversationType.BOT -> "${botNames[index % botNames.size]} ${index + 1}"
+            ConversationType.SINGLE -> singleNames[index % singleNames.size]
+            ConversationType.GROUP -> groupNames[index % groupNames.size]
+            ConversationType.BOT -> botNames[index % botNames.size]
         }
 
     private fun avatarTextFor(name: String): String =
