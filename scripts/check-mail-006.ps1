@@ -27,12 +27,16 @@ if (-not (Test-Path $detailPath)) {
             Pattern = "item\.detail\.body"
         },
         @{
-            Name = "Mail detail renders metas"
-            Pattern = "item\.detail\.metas\.forEach"
+            Name = "Mail detail renders compact header back affordance"
+            Pattern = "setOnClickListener\s*\{\s*onBack\s*\(\s*\)\s*\}"
         },
         @{
-            Name = "Mail detail renders metas"
-            Pattern = "item\.detail\.metas\.forEach"
+            Name = "Mail detail renders sender row"
+            Pattern = "createSenderRow"
+        },
+        @{
+            Name = "Mail detail renders useful badges"
+            Pattern = "createBadgeRow"
         }
     )
 
@@ -91,6 +95,10 @@ if (-not (Test-Path $mainActivityPath)) {
 
 if ($detail -match "Back to mail") {
     $failures.Add("Mail detail does not render an in-page Back to mail button")
+}
+
+if ($detail -match "item\.detail\.metas\.forEach") {
+    $failures.Add("Mail detail does not expose internal meta rows")
 }
 
 if (-not (Test-Path $buildPath)) {

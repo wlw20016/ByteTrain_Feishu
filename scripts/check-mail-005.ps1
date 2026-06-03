@@ -50,7 +50,7 @@ if (-not (Test-Path $mainActivityPath)) {
         },
         @{
             Name = "MainActivity rerenders mail list after loading more"
-            Pattern = "onLoadMore\s*=\s*\{[\s\S]*loadNextMailPage\s*\(\s*\)[\s\S]*renderMailList\s*\(\s*\)"
+            Pattern = "onLoadMore\s*=\s*\{\s*scrollY\s*->[\s\S]*mailListScrollY\s*=\s*scrollY[\s\S]*isLoadingMoreMails\s*=\s*true[\s\S]*loadNextMailPage\s*\(\s*\)[\s\S]*isLoadingMoreMails\s*=\s*false[\s\S]*renderMailList\s*\(\s*\)"
         },
         @{
             Name = "MainActivity labels total mock emails"
@@ -82,16 +82,20 @@ if (-not (Test-Path $screenPath)) {
             Pattern = "hasMore\s*:\s*Boolean"
         },
         @{
-            Name = "Mail list accepts load more callback"
-            Pattern = "onLoadMore\s*:\s*\(\)\s*->\s*Unit"
+            Name = "Mail list accepts loading-more state"
+            Pattern = "isLoadingMore\s*:\s*Boolean"
         },
         @{
-            Name = "Mail list renders Load more button"
-            Pattern = "text\s*=\s*`"Load more`""
+            Name = "Mail list accepts scroll-aware load more callback"
+            Pattern = "onLoadMore\s*:\s*\(Int\)\s*->\s*Unit"
         },
         @{
-            Name = "Mail list calls load more callback"
-            Pattern = "setOnClickListener\s*\{\s*onLoadMore\s*\(\s*\)\s*\}"
+            Name = "Mail list triggers load more from scroll"
+            Pattern = "setOnScrollChangeListener[\s\S]*onLoadMore\s*\(\s*scrollY\s*\)"
+        },
+        @{
+            Name = "Mail list renders loading more state"
+            Pattern = "Loading more mail"
         },
         @{
             Name = "Mail list renders no more state"
@@ -104,6 +108,10 @@ if (-not (Test-Path $screenPath)) {
             $failures.Add($check.Name)
         }
     }
+}
+
+if ($screen -match '"Load more"') {
+    $failures.Add("Mail list no longer renders Load more button")
 }
 
 if ($failures.Count -gt 0) {

@@ -49,6 +49,8 @@ class MainActivity : Activity() {
     private var hasMoreMails: Boolean = true
     private var messageListScrollY: Int = 0
     private var mailListScrollY: Int = 0
+    private var isLoadingMoreMessages: Boolean = false
+    private var isLoadingMoreMails: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -277,15 +279,25 @@ class MainActivity : Activity() {
             items = items,
             totalLabel = "Showing ${items.size} of 10000 mock conversations",
             hasMore = hasMoreMessages,
+            isLoadingMore = isLoadingMoreMessages,
             initialScrollY = messageListScrollY,
             onOpenDetail = { item, scrollY ->
                 messageListScrollY = scrollY
                 selectedMessageItem = item
                 renderMessageDetail(item)
             },
-            onLoadMore = {
-                loadNextMessagePage()
+            onLoadMore = { scrollY ->
+                if (isLoadingMoreMessages) {
+                    return@createMessageListScreen
+                }
+                messageListScrollY = scrollY
+                isLoadingMoreMessages = true
                 renderMessageList()
+                contentContainer.post {
+                    loadNextMessagePage()
+                    isLoadingMoreMessages = false
+                    renderMessageList()
+                }
             },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -316,15 +328,25 @@ class MainActivity : Activity() {
             items = items,
             totalLabel = "Showing ${items.size} of 10000 mock emails",
             hasMore = hasMoreMails,
+            isLoadingMore = isLoadingMoreMails,
             initialScrollY = mailListScrollY,
             onOpenDetail = { item, scrollY ->
                 mailListScrollY = scrollY
                 selectedMailItem = item
                 renderMailDetail(item)
             },
-            onLoadMore = {
-                loadNextMailPage()
+            onLoadMore = { scrollY ->
+                if (isLoadingMoreMails) {
+                    return@createMailListScreen
+                }
+                mailListScrollY = scrollY
+                isLoadingMoreMails = true
                 renderMailList()
+                contentContainer.post {
+                    loadNextMailPage()
+                    isLoadingMoreMails = false
+                    renderMailList()
+                }
             },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -337,6 +359,10 @@ class MainActivity : Activity() {
         contentContainer.addView(createMailDetailScreen(
             context = this,
             item = item,
+            onBack = {
+                selectedMailItem = null
+                renderMailList()
+            },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,

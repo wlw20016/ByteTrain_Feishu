@@ -63,3 +63,28 @@ Message and mail detail screens MUST rely on Android system back navigation for 
 - When the user presses the Android system back navigation
 - Then the app returns to the mail list
 - And the mail list restores the previous scroll position instead of jumping to the first item
+
+### Requirement: Mail detail MUST use a mobile email reading view
+
+The mail detail screen MUST present email content as a mobile reading view and MUST avoid exposing internal mock/debug metadata.
+
+#### Scenario: User opens a mail detail
+
+- Given the user taps a mail card
+- When the detail screen opens
+- Then the content is shown as an email reading page with a compact header back affordance
+- And the sender, time, subject, preview body, and useful badges are presented naturally
+- And internal fields such as raw type, unread state, attachment count, and action labels are not shown as debug-style meta rows
+- And there is no in-page `Back to mail` button
+
+### Requirement: Lists MUST auto-load more content when scrolled near the bottom
+
+Message and mail lists MUST behave like mobile app feeds: loading more content is triggered by scrolling near the bottom instead of tapping a full-width `Load more` button.
+
+#### Scenario: User scrolls to the end of a list
+
+- Given the message or mail list has more mock data
+- When the user scrolls near the bottom of the list
+- Then the app shows a loading-more footer state
+- And the next page is appended automatically
+- And the list remains near the user's current position after new content is appended instead of jumping to the top
