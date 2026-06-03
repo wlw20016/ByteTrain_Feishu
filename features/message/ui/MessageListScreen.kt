@@ -18,12 +18,13 @@ fun createMessageListScreen(
     items: List<UnifiedListItem>,
     totalLabel: String,
     hasMore: Boolean,
-    onOpenDetail: (UnifiedListItem) -> Unit,
+    initialScrollY: Int,
+    onOpenDetail: (UnifiedListItem, Int) -> Unit,
     onLoadMore: () -> Unit,
 ): View {
     val density = context.resources.displayMetrics.density
 
-    return ScrollView(context).apply {
+    val scrollView = ScrollView(context).apply {
         isFillViewport = true
         addView(LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -38,6 +39,12 @@ fun createMessageListScreen(
             addView(createLoadMoreFooter(context, density, hasMore, onLoadMore))
         })
     }
+
+    scrollView.post {
+        scrollView.scrollTo(0, initialScrollY)
+    }
+
+    return scrollView
 }
 
 private fun createHeader(
@@ -67,7 +74,7 @@ private fun createMessageRow(
     context: Context,
     density: Float,
     item: UnifiedListItem,
-    onOpenDetail: (UnifiedListItem) -> Unit,
+    onOpenDetail: (UnifiedListItem, Int) -> Unit,
 ): View =
     LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
@@ -75,7 +82,10 @@ private fun createMessageRow(
         setPadding(0, dp(density, 10), 0, dp(density, 10))
         isClickable = true
         isFocusable = true
-        setOnClickListener { onOpenDetail(item) }
+        setOnClickListener {
+            val scrollY = parentScrollY()
+            onOpenDetail(item, scrollY)
+        }
 
         addView(createAvatar(context, density, item), LinearLayout.LayoutParams(
             dp(density, 44),
@@ -122,6 +132,17 @@ private fun createMessageRow(
             1f,
         ))
     }
+
+private fun View.parentScrollY(): Int {
+    var current = parent
+    while (current is View) {
+        if (current is ScrollView) {
+            return current.scrollY
+        }
+        current = current.parent
+    }
+    return 0
+}
 
 private fun createAvatar(
     context: Context,

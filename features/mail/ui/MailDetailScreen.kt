@@ -5,7 +5,6 @@ import android.graphics.Typeface
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -15,7 +14,6 @@ import com.bytetrain.feishuclone.shared.ui.UnifiedListItem
 fun createMailDetailScreen(
     context: Context,
     item: UnifiedListItem,
-    onBack: () -> Unit,
 ): View {
     val density = context.resources.displayMetrics.density
 
@@ -24,14 +22,6 @@ fun createMailDetailScreen(
         addView(LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(density, 16), dp(density, 12), dp(density, 16), dp(density, 12))
-
-            addView(Button(context).apply {
-                text = "Back to mail"
-                setOnClickListener { onBack() }
-            }, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ))
 
             addView(TextView(context).apply {
                 text = item.detail.title

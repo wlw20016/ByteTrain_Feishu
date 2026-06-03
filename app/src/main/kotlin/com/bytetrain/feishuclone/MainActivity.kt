@@ -42,6 +42,8 @@ class MainActivity : Activity() {
     private var nextMailCursor: String? = null
     private var hasMoreMessages: Boolean = true
     private var hasMoreMails: Boolean = true
+    private var messageListScrollY: Int = 0
+    private var mailListScrollY: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +51,21 @@ class MainActivity : Activity() {
         title = "ByteTrain Feishu"
         setContentView(createRootView())
         renderSelectedRoute()
+    }
+
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun onBackPressed() {
+        when {
+            currentRoute == AppRoutes.MESSAGE_LIST && selectedMessageItem != null -> {
+                selectedMessageItem = null
+                renderMessageList()
+            }
+            currentRoute == AppRoutes.MAIL_LIST && selectedMailItem != null -> {
+                selectedMailItem = null
+                renderMailList()
+            }
+            else -> super.onBackPressed()
+        }
     }
 
     private fun createRootView(): LinearLayout {
@@ -224,7 +241,9 @@ class MainActivity : Activity() {
             items = items,
             totalLabel = "Showing ${items.size} of 10000 mock conversations",
             hasMore = hasMoreMessages,
-            onOpenDetail = { item ->
+            initialScrollY = messageListScrollY,
+            onOpenDetail = { item, scrollY ->
+                messageListScrollY = scrollY
                 selectedMessageItem = item
                 renderMessageDetail(item)
             },
@@ -243,10 +262,6 @@ class MainActivity : Activity() {
         contentContainer.addView(createMessageDetailScreen(
             context = this,
             item = item,
-            onBack = {
-                selectedMessageItem = null
-                renderMessageList()
-            },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -261,7 +276,9 @@ class MainActivity : Activity() {
             items = items,
             totalLabel = "Showing ${items.size} of 10000 mock emails",
             hasMore = hasMoreMails,
-            onOpenDetail = { item ->
+            initialScrollY = mailListScrollY,
+            onOpenDetail = { item, scrollY ->
+                mailListScrollY = scrollY
                 selectedMailItem = item
                 renderMailDetail(item)
             },
@@ -280,10 +297,6 @@ class MainActivity : Activity() {
         contentContainer.addView(createMailDetailScreen(
             context = this,
             item = item,
-            onBack = {
-                selectedMailItem = null
-                renderMailList()
-            },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,

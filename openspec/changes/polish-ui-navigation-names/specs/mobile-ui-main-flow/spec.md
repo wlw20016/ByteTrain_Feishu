@@ -32,3 +32,33 @@ Message mock data MUST use natural conversation names without appending visible 
 - When conversation titles are rendered
 - Then names such as `Mia Zhang`, `Noah Liu`, and `Calendar Bot` appear without trailing generated numbers
 - And record identity remains stable through the item `id` field rather than the visible title
+
+### Requirement: Message detail MUST behave like a mobile chat view
+
+The message detail screen MUST present conversation content as a chat-style view and MUST avoid exposing internal mock/debug metadata.
+
+#### Scenario: User opens a message detail
+
+- Given the user taps a message conversation
+- When the detail screen opens
+- Then the content is shown as chat bubbles with a composer area
+- And internal fields such as type, unread count, pinned state, muted state, and bot state are not shown as meta rows
+- And there is no in-page `Back to messages` button
+
+### Requirement: Detail navigation MUST use Android system back and preserve list position
+
+Message and mail detail screens MUST rely on Android system back navigation for returning to the previous list. Returning from a detail screen MUST restore the list scroll position the user had before opening the detail.
+
+#### Scenario: User returns from message detail
+
+- Given the user has scrolled the message list and opened a message detail
+- When the user presses the Android system back navigation
+- Then the app returns to the message list
+- And the message list restores the previous scroll position instead of jumping to the first item
+
+#### Scenario: User returns from mail detail
+
+- Given the user has scrolled the mail list and opened a mail detail
+- When the user presses the Android system back navigation
+- Then the app returns to the mail list
+- And the mail list restores the previous scroll position instead of jumping to the first item
