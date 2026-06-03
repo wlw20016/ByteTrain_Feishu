@@ -72,5 +72,6 @@
 
 ## 7. 文档
 
-- [ ] DOC-001 记录本 UI change 的 AI prompt、AI 结论、人工决策和最终结果。
+- [x] DOC-001 记录本 UI change 的 AI prompt、AI 结论、人工决策和最终结果。
+  - 证据：`docs/ai-context/ui-main-flow-doc-001.md` 已记录本 UI change 的 AI prompt、AI conclusions、Human decisions 和 Final result；`scripts/check-doc-001.ps1` 已验证 DOC-001 文档和任务证据；`powershell -ExecutionPolicy Bypass -File .\scripts\check-doc-001.ps1` 通过。
 - [ ] 更新飞书多维表格中 UI 相关任务的状态、负责人和证据链接。
