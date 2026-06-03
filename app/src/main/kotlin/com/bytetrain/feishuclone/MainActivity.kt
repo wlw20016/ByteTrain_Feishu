@@ -1,10 +1,15 @@
 package com.bytetrain.feishuclone
 
 import android.app.Activity
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import com.bytetrain.feishuclone.features.mail.data.MockMailRepository
 import com.bytetrain.feishuclone.features.mail.domain.MailItem
 import com.bytetrain.feishuclone.features.mail.mapper.toUnifiedListItem
@@ -24,8 +29,8 @@ import kotlin.coroutines.startCoroutine
 
 class MainActivity : Activity() {
     private lateinit var contentContainer: LinearLayout
-    private lateinit var messageTab: Button
-    private lateinit var mailTab: Button
+    private lateinit var messageTab: LinearLayout
+    private lateinit var mailTab: LinearLayout
     private var currentRoute: String = AppRoutes.MESSAGE_LIST
     private var selectedMessageItem: UnifiedListItem? = null
     private var selectedMailItem: UnifiedListItem? = null
@@ -74,32 +79,80 @@ class MainActivity : Activity() {
     }
 
     private fun createBottomTabBar(): LinearLayout {
+        val density = resources.displayMetrics.density
+
         return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(0, dp(density, 6), 0, 0)
 
-            messageTab = createTabButton("Messages", AppRoutes.MESSAGE_LIST, R.drawable.ic_messages_24)
-            mailTab = createTabButton("Mail", AppRoutes.MAIL_LIST, R.drawable.ic_mail_24)
+            messageTab = createNavigationTab("消息", AppRoutes.MESSAGE_LIST, R.drawable.ic_messages_24)
+            mailTab = createNavigationTab("邮箱", AppRoutes.MAIL_LIST, R.drawable.ic_mail_24)
 
             addView(messageTab, LinearLayout.LayoutParams(
                 0,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                dp(density, 64),
                 1f,
             ))
             addView(mailTab, LinearLayout.LayoutParams(
                 0,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                dp(density, 64),
                 1f,
             ))
         }
     }
 
-    private fun createTabButton(label: String, route: String, iconResId: Int): Button {
-        return Button(this).apply {
-            text = ""
+    private fun createNavigationTab(label: String, route: String, iconResId: Int): LinearLayout {
+        val density = resources.displayMetrics.density
+
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            isClickable = true
+            isFocusable = true
             contentDescription = label
-            setCompoundDrawablesWithIntrinsicBounds(0, iconResId, 0, 0)
+            setPadding(dp(density, 8), dp(density, 4), dp(density, 8), dp(density, 4))
+
+            addView(ImageView(context).apply {
+                setImageResource(iconResId)
+                setColorFilter(UNSELECTED_TAB_COLOR)
+            }, LinearLayout.LayoutParams(
+                dp(density, 28),
+                dp(density, 28),
+            ))
+
+            addView(TextView(context).apply {
+                text = label
+                textSize = 12f
+                typeface = Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+                setTextColor(UNSELECTED_TAB_COLOR)
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = dp(density, 3)
+            })
+
             setOnClickListener { selectRoute(route) }
         }
+    }
+
+    private fun applyTabSelection(tab: LinearLayout, selected: Boolean) {
+        val color = if (selected) SELECTED_TAB_COLOR else UNSELECTED_TAB_COLOR
+        tab.isSelected = selected
+        tab.background = if (selected) {
+            GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dp(resources.displayMetrics.density, 12).toFloat()
+                setColor(SELECTED_TAB_BACKGROUND_COLOR)
+            }
+        } else {
+            null
+        }
+
+        (tab.getChildAt(0) as? ImageView)?.setColorFilter(color)
+        (tab.getChildAt(1) as? TextView)?.setTextColor(color)
     }
 
     private fun selectRoute(route: String) {
@@ -129,8 +182,8 @@ class MainActivity : Activity() {
             }
         }
 
-        messageTab.isSelected = currentRoute == AppRoutes.MESSAGE_LIST
-        mailTab.isSelected = currentRoute == AppRoutes.MAIL_LIST
+        applyTabSelection(messageTab, currentRoute == AppRoutes.MESSAGE_LIST)
+        applyTabSelection(mailTab, currentRoute == AppRoutes.MAIL_LIST)
     }
 
     private fun ensureInitialMessagesLoaded() {
@@ -270,6 +323,9 @@ class MainActivity : Activity() {
     companion object {
         private const val MESSAGE_PAGE_SIZE = 30
         private const val MAIL_PAGE_SIZE = 30
+        private const val SELECTED_TAB_COLOR = 0xFF2F80ED.toInt()
+        private const val UNSELECTED_TAB_COLOR = 0xFF8A94A6.toInt()
+        private const val SELECTED_TAB_BACKGROUND_COLOR = 0xFFEAF2FF.toInt()
     }
 }
 
@@ -294,3 +350,6 @@ private fun <T> runSuspendBlocking(block: suspend () -> T): T {
     error?.let { throw it }
     return value ?: error("Suspend block completed without a value")
 }
+
+private fun dp(density: Float, value: Int): Int =
+    (value * density).toInt()

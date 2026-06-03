@@ -20,12 +20,40 @@ if ($mainActivity -notmatch 'R\.drawable\.ic_mail_24') {
     $failures.Add("Mail tab uses the mail icon resource")
 }
 
-if ($mainActivity -notmatch 'setCompoundDrawablesWithIntrinsicBounds') {
-    $failures.Add("Bottom tab buttons render compound icon drawables")
+if ($mainActivity -notmatch 'android\.widget\.ImageView') {
+    $failures.Add("Bottom tabs use ImageView icons instead of native Button drawables")
+}
+
+if ($mainActivity -notmatch 'android\.widget\.TextView') {
+    $failures.Add("Bottom tabs include compact text labels")
+}
+
+if ($mainActivity -notmatch 'createNavigationTab') {
+    $failures.Add("Bottom tabs are custom navigation tab views")
 }
 
 if ($mainActivity -notmatch 'contentDescription\s*=\s*label') {
-    $failures.Add("Icon-only bottom tabs keep accessible labels")
+    $failures.Add("Bottom tabs keep accessible labels")
+}
+
+if ($mainActivity -match 'import\s+android\.widget\.Button') {
+    $failures.Add("Bottom tabs no longer use native Button styling")
+}
+
+if ($mainActivity -notmatch 'SELECTED_TAB_COLOR') {
+    $failures.Add("Bottom tabs define a selected color")
+}
+
+if ($mainActivity -notmatch 'UNSELECTED_TAB_COLOR') {
+    $failures.Add("Bottom tabs define an unselected color")
+}
+
+if ($mainActivity -notmatch 'applyTabSelection') {
+    $failures.Add("Bottom tabs apply selected-state feedback")
+}
+
+if ($mainActivity -notmatch 'setColorFilter') {
+    $failures.Add("Bottom tab icons change color with selection")
 }
 
 if ($mainActivity -match 'createTabButton\("Messages",\s*AppRoutes\.MESSAGE_LIST\)') {
