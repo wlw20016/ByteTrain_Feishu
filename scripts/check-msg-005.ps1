@@ -42,7 +42,7 @@ if (-not (Test-Path $mainActivityPath)) {
         },
         @{
             Name = "MainActivity rerenders after loading more"
-            Pattern = "onLoadMore\s*=\s*\{[\s\S]*loadNextMessagePage\s*\(\s*\)[\s\S]*renderMessageList\s*\(\s*\)"
+            Pattern = "onLoadMore\s*=\s*\{\s*scrollY\s*->[\s\S]*messageListScrollY\s*=\s*scrollY[\s\S]*isLoadingMoreMessages\s*=\s*true[\s\S]*loadNextMessagePage\s*\(\s*\)[\s\S]*isLoadingMoreMessages\s*=\s*false[\s\S]*renderMessageList\s*\(\s*\)"
         }
     )
 
@@ -63,16 +63,20 @@ if (-not (Test-Path $screenPath)) {
             Pattern = "hasMore\s*:\s*Boolean"
         },
         @{
-            Name = "Message list accepts load more callback"
-            Pattern = "onLoadMore\s*:\s*\(\)\s*->\s*Unit"
+            Name = "Message list accepts loading-more state"
+            Pattern = "isLoadingMore\s*:\s*Boolean"
         },
         @{
-            Name = "Message list renders Load more button"
-            Pattern = "text\s*=\s*`"Load more`""
+            Name = "Message list accepts scroll-aware load more callback"
+            Pattern = "onLoadMore\s*:\s*\(Int\)\s*->\s*Unit"
         },
         @{
-            Name = "Message list calls load more callback"
-            Pattern = "setOnClickListener\s*\{\s*onLoadMore\s*\(\s*\)\s*\}"
+            Name = "Message list triggers load more from scroll"
+            Pattern = "setOnScrollChangeListener[\s\S]*onLoadMore\s*\(\s*scrollY\s*\)"
+        },
+        @{
+            Name = "Message list renders loading more state"
+            Pattern = "Loading more messages"
         },
         @{
             Name = "Message list renders no more state"
@@ -85,6 +89,10 @@ if (-not (Test-Path $screenPath)) {
             $failures.Add($check.Name)
         }
     }
+}
+
+if ($screen -match '"Load more"') {
+    $failures.Add("Message list no longer renders Load more button")
 }
 
 if ($failures.Count -gt 0) {

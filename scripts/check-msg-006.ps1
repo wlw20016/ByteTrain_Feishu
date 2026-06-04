@@ -19,24 +19,24 @@ if (-not (Test-Path $detailPath)) {
             Pattern = "fun\s+createMessageDetailScreen\s*\("
         },
         @{
-            Name = "Message detail renders detail title"
-            Pattern = "item\.detail\.title"
+            Name = "Message detail renders conversation title"
+            Pattern = "item\.title"
         },
         @{
-            Name = "Message detail renders detail body"
+            Name = "Message detail renders chat body"
             Pattern = "item\.detail\.body"
         },
         @{
-            Name = "Message detail renders metas"
-            Pattern = "item\.detail\.metas\.forEach"
+            Name = "Message detail renders outgoing chat bubble"
+            Pattern = "createOutgoingBubble"
         },
         @{
-            Name = "Message detail provides back action"
-            Pattern = "Back to messages"
+            Name = "Message detail renders incoming chat bubbles"
+            Pattern = "createIncomingBubble"
         },
         @{
-            Name = "Message detail invokes onBack"
-            Pattern = "setOnClickListener\s*\{\s*onBack\s*\(\s*\)\s*\}"
+            Name = "Message detail renders composer bar"
+            Pattern = "createComposerBar"
         }
     )
 
@@ -51,11 +51,11 @@ if (-not (Test-Path $listPath)) {
     $failures.Add("MessageListScreen.kt exists")
 } else {
     $list = Get-Content -Encoding UTF8 -Raw $listPath
-    if ($list -notmatch "onOpenDetail\s*:\s*\(UnifiedListItem\)\s*->\s*Unit") {
-        $failures.Add("Message list accepts open detail callback")
+    if ($list -notmatch "onOpenDetail\s*:\s*\(UnifiedListItem,\s*Int\)\s*->\s*Unit") {
+        $failures.Add("Message list accepts open detail callback with scroll position")
     }
-    if ($list -notmatch "setOnClickListener\s*\{\s*onOpenDetail\s*\(\s*item\s*\)\s*\}") {
-        $failures.Add("Message row opens detail on click")
+    if ($list -notmatch "onOpenDetail\s*\(\s*item,\s*scrollY\s*\)") {
+        $failures.Add("Message row opens detail with current scroll position")
     }
 }
 
@@ -74,15 +74,15 @@ if (-not (Test-Path $mainActivityPath)) {
         },
         @{
             Name = "MainActivity opens message detail"
-            Pattern = "onOpenDetail\s*=\s*\{\s*item\s*->[\s\S]*selectedMessageItem\s*=\s*item[\s\S]*renderMessageDetail\s*\(\s*item\s*\)"
+            Pattern = "onOpenDetail\s*=\s*\{\s*item,\s*scrollY\s*->[\s\S]*messageListScrollY\s*=\s*scrollY[\s\S]*selectedMessageItem\s*=\s*item[\s\S]*renderMessageDetail\s*\(\s*item\s*\)"
         },
         @{
             Name = "MainActivity renders detail screen"
             Pattern = "createMessageDetailScreen\s*\("
         },
         @{
-            Name = "MainActivity clears detail selection on back"
-            Pattern = "selectedMessageItem\s*=\s*null[\s\S]*renderMessageList\s*\(\s*\)"
+            Name = "MainActivity clears detail selection on system back"
+            Pattern = "override\s+fun\s+onBackPressed\s*\(\s*\)[\s\S]*selectedMessageItem\s*=\s*null[\s\S]*renderMessageList\s*\(\s*\)"
         }
     )
 
@@ -91,6 +91,14 @@ if (-not (Test-Path $mainActivityPath)) {
             $failures.Add($check.Name)
         }
     }
+}
+
+if ($detail -match "Back to messages") {
+    $failures.Add("Message detail does not render an in-page Back to messages button")
+}
+
+if ($detail -match "item\.detail\.metas\.forEach") {
+    $failures.Add("Message detail does not expose internal meta rows")
 }
 
 if (-not (Test-Path $buildPath)) {

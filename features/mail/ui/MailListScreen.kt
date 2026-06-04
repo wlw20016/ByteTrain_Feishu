@@ -6,7 +6,6 @@ import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -18,12 +17,14 @@ fun createMailListScreen(
     items: List<UnifiedListItem>,
     totalLabel: String,
     hasMore: Boolean,
-    onOpenDetail: (UnifiedListItem) -> Unit,
-    onLoadMore: () -> Unit,
+    isLoadingMore: Boolean,
+    initialScrollY: Int,
+    onOpenDetail: (UnifiedListItem, Int) -> Unit,
+    onLoadMore: (Int) -> Unit,
 ): View {
     val density = context.resources.displayMetrics.density
 
-    return ScrollView(context).apply {
+    val scrollView = ScrollView(context).apply {
         isFillViewport = true
         addView(LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -35,9 +36,27 @@ fun createMailListScreen(
                 addView(createMailCard(context, density, item, onOpenDetail))
             }
 
-            addView(createLoadMoreFooter(context, density, hasMore, onLoadMore))
+            addView(createLoadMoreFooter(context, density, hasMore, isLoadingMore))
         })
+
+        setOnScrollChangeListener { view, _, scrollY, _, _ ->
+            if (!hasMore || isLoadingMore) {
+                return@setOnScrollChangeListener
+            }
+
+            val child = (view as ScrollView).getChildAt(0) ?: return@setOnScrollChangeListener
+            val distanceToBottom = child.bottom - (view.height + scrollY)
+            if (distanceToBottom <= dp(density, 96)) {
+                onLoadMore(scrollY)
+            }
+        }
     }
+
+    scrollView.post {
+        scrollView.scrollTo(0, initialScrollY)
+    }
+
+    return scrollView
 }
 
 private fun createHeader(
@@ -67,14 +86,17 @@ private fun createMailCard(
     context: Context,
     density: Float,
     item: UnifiedListItem,
-    onOpenDetail: (UnifiedListItem) -> Unit,
+    onOpenDetail: (UnifiedListItem, Int) -> Unit,
 ): View =
     LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
         setPadding(dp(density, 14), dp(density, 12), dp(density, 14), dp(density, 12))
         isClickable = true
         isFocusable = true
-        setOnClickListener { onOpenDetail(item) }
+        setOnClickListener {
+            val scrollY = parentScrollY()
+            onOpenDetail(item, scrollY)
+        }
         background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = dp(density, 8).toFloat()
@@ -135,6 +157,17 @@ private fun createMailCard(
         }
     }
 
+private fun View.parentScrollY(): Int {
+    var current = parent
+    while (current is View) {
+        if (current is ScrollView) {
+            return current.scrollY
+        }
+        current = current.parent
+    }
+    return 0
+}
+
 private fun createAvatar(
     context: Context,
     density: Float,
@@ -188,29 +221,23 @@ private fun createLoadMoreFooter(
     context: Context,
     density: Float,
     hasMore: Boolean,
-    onLoadMore: () -> Unit,
+    isLoadingMore: Boolean,
 ): View =
     LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER
         setPadding(0, dp(density, 12), 0, dp(density, 8))
 
-        if (hasMore) {
-            addView(Button(context).apply {
-                text = "Load more"
-                setOnClickListener { onLoadMore() }
-            }, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ))
-        } else {
-            addView(TextView(context).apply {
-                text = "No more mail"
-                textSize = 12f
-                gravity = Gravity.CENTER
-                setTextColor(0xFF8A94A6.toInt())
-            })
-        }
+        addView(TextView(context).apply {
+            text = when {
+                isLoadingMore -> "Loading more mail..."
+                hasMore -> "Pull up to load more"
+                else -> "No more mail"
+            }
+            textSize = 12f
+            gravity = Gravity.CENTER
+            setTextColor(0xFF8A94A6.toInt())
+        })
     }
 
 private fun String.badgeBackgroundColor(): Int =

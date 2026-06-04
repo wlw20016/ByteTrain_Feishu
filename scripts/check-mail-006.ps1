@@ -27,16 +27,16 @@ if (-not (Test-Path $detailPath)) {
             Pattern = "item\.detail\.body"
         },
         @{
-            Name = "Mail detail renders metas"
-            Pattern = "item\.detail\.metas\.forEach"
-        },
-        @{
-            Name = "Mail detail provides back action"
-            Pattern = "Back to mail"
-        },
-        @{
-            Name = "Mail detail invokes onBack"
+            Name = "Mail detail renders compact header back affordance"
             Pattern = "setOnClickListener\s*\{\s*onBack\s*\(\s*\)\s*\}"
+        },
+        @{
+            Name = "Mail detail renders sender row"
+            Pattern = "createSenderRow"
+        },
+        @{
+            Name = "Mail detail renders useful badges"
+            Pattern = "createBadgeRow"
         }
     )
 
@@ -51,11 +51,11 @@ if (-not (Test-Path $listPath)) {
     $failures.Add("MailListScreen.kt exists")
 } else {
     $list = Get-Content -Encoding UTF8 -Raw $listPath
-    if ($list -notmatch "onOpenDetail\s*:\s*\(UnifiedListItem\)\s*->\s*Unit") {
-        $failures.Add("Mail list accepts open detail callback")
+    if ($list -notmatch "onOpenDetail\s*:\s*\(UnifiedListItem,\s*Int\)\s*->\s*Unit") {
+        $failures.Add("Mail list accepts open detail callback with scroll position")
     }
-    if ($list -notmatch "setOnClickListener\s*\{\s*onOpenDetail\s*\(\s*item\s*\)\s*\}") {
-        $failures.Add("Mail card opens detail on click")
+    if ($list -notmatch "onOpenDetail\s*\(\s*item,\s*scrollY\s*\)") {
+        $failures.Add("Mail card opens detail with current scroll position")
     }
 }
 
@@ -74,15 +74,15 @@ if (-not (Test-Path $mainActivityPath)) {
         },
         @{
             Name = "MainActivity opens mail detail"
-            Pattern = "onOpenDetail\s*=\s*\{\s*item\s*->[\s\S]*selectedMailItem\s*=\s*item[\s\S]*renderMailDetail\s*\(\s*item\s*\)"
+            Pattern = "onOpenDetail\s*=\s*\{\s*item,\s*scrollY\s*->[\s\S]*mailListScrollY\s*=\s*scrollY[\s\S]*selectedMailItem\s*=\s*item[\s\S]*renderMailDetail\s*\(\s*item\s*\)"
         },
         @{
             Name = "MainActivity renders mail detail screen"
             Pattern = "createMailDetailScreen\s*\("
         },
         @{
-            Name = "MainActivity clears mail detail selection on back"
-            Pattern = "selectedMailItem\s*=\s*null[\s\S]*renderMailList\s*\(\s*\)"
+            Name = "MainActivity clears mail detail selection on system back"
+            Pattern = "override\s+fun\s+onBackPressed\s*\(\s*\)[\s\S]*selectedMailItem\s*=\s*null[\s\S]*renderMailList\s*\(\s*\)"
         }
     )
 
@@ -91,6 +91,14 @@ if (-not (Test-Path $mainActivityPath)) {
             $failures.Add($check.Name)
         }
     }
+}
+
+if ($detail -match "Back to mail") {
+    $failures.Add("Mail detail does not render an in-page Back to mail button")
+}
+
+if ($detail -match "item\.detail\.metas\.forEach") {
+    $failures.Add("Mail detail does not expose internal meta rows")
 }
 
 if (-not (Test-Path $buildPath)) {
