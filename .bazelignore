@@ -1,0 +1,14 @@
+# Local/generated directories that are not part of the Bazel workspace.
+.gradle
+.idea
+.kotlin
+build
+app/build
+
+# Bazel outputs and local dependency cache/prewarm directories.
+bazel-bin
+bazel-bytetrain_feishu
+bazel-distdir
+bazel-lib-3.1.0
+bazel-out
+bazel-testlogs

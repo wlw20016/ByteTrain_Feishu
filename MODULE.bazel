@@ -57,6 +57,10 @@ register_toolchains("@androidsdk//:sdk-toolchain", "@androidsdk//:all")
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(
     edition = "2021",
+    urls = [
+        "https://mirrors.ustc.edu.cn/rust-static/dist/{}.tar.xz",
+        "https://static.rust-lang.org/dist/{}.tar.xz",
+    ],
     versions = ["1.96.0"],
 )
 use_repo(rust, "rust_toolchains")
