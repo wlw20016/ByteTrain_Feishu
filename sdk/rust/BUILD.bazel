@@ -1,4 +1,16 @@
 package(default_visibility = ["//visibility:public"])
 
-# Placeholder target. Rust Bazel rules will be wired in a later change.
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
+rust_library(
+    name = "bytetrain_feed_sdk",
+    srcs = ["src/lib.rs"],
+    crate_name = "bytetrain_feed_sdk",
+    edition = "2021",
+)
+
+rust_test(
+    name = "bytetrain_feed_sdk_test",
+    crate = ":bytetrain_feed_sdk",
+)
 

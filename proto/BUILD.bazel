@@ -1,4 +1,35 @@
 package(default_visibility = ["//visibility:public"])
 
-# Placeholder proto targets. rules_proto integration will be added later.
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+proto_library(
+    name = "paging_proto",
+    srcs = ["paging.proto"],
+)
+
+proto_library(
+    name = "mail_proto",
+    srcs = ["mail.proto"],
+    deps = [":paging_proto"],
+)
+
+proto_library(
+    name = "message_proto",
+    srcs = ["message.proto"],
+    deps = [":paging_proto"],
+)
+
+proto_library(
+    name = "feed_proto",
+    deps = [
+        ":mail_proto",
+        ":message_proto",
+        ":paging_proto",
+    ],
+)
+
+alias(
+    name = "...",
+    actual = ":feed_proto",
+)
 

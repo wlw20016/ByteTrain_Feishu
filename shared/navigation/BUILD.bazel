@@ -1,4 +1,9 @@
 package(default_visibility = ["//visibility:public"])
 
-# Placeholder target for navigation route definitions.
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
+kt_jvm_library(
+    name = "navigation",
+    srcs = ["AppRoutes.kt"],
+)
 
