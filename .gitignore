@@ -28,6 +28,9 @@ target/
 # IDE
 .idea/
 .vscode/
+!.vscode/
+.vscode/*
+!.vscode/tasks.json
 *.iml
 
 # Local Bazel overrides

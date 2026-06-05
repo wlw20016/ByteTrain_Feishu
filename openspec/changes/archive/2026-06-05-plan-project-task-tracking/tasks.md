@@ -1,4 +1,4 @@
-# Tasks: plan-project-task-tracking
+﻿# 任务：plan-project-task-tracking
 
 ## 1. 飞书多维表格配置
 
@@ -13,7 +13,7 @@
 - [x] 将 OpenSpec change ID 补充到每一条飞书多维表格任务记录中。
 - [x] 在相关 `tasks.md` 中保留飞书任务 ID，便于双向追踪。
 
-## 3. Review 流程
+## 3. 评审流程
 
 - [x] 明确飞书多维表格只作为日常进度跟踪入口。
 - [x] 明确 OpenSpec `tasks.md` 中的证据才是正式验收依据。

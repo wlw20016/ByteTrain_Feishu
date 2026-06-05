@@ -1,4 +1,4 @@
-﻿# Tasks: wire-bazel-build
+﻿# 任务：wire-bazel-build
 
 ## 1. 工具链决策
 
@@ -6,7 +6,7 @@
 
   证据：2026-06-04 已在 `docs/ai-context/build-commands.md` 的 “Bazel rules 选型” 中记录决策。采用 `rules_android` `0.7.2`、`rules_kotlin` `2.3.20`、`rules_proto` `7.1.0`、`rules_rust` `0.70.0`，并记录拒绝继续仅依赖 Gradle、手写 shell/genrule 或自写底层规则的原因。本机依据：Bazel `9.1.0`、JDK `17.0.12`、Android SDK 36、Rust/Cargo `1.96.0`。
 
-## 2. Targets
+## 2. 构建目标
 
 - [x] BZL-002 新增 proto Bazel targets，并验证 `bazel build //proto:...`。
 
@@ -23,7 +23,7 @@
 
   证据：2026-06-04 已在 `MODULE.bazel` 中接入 `rules_rust` `0.70.0`，并在 `sdk/rust/BUILD.bazel` 中新增 `//sdk/rust:bytetrain_feed_sdk` 和 `//sdk/rust:bytetrain_feed_sdk_test`。Bazel 验证命令 `bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4` 已尝试，但 Bzlmod 在 analysis 阶段拉取 `rules_kotlin`、`bazel_lib` 和 Go 下载源超时，未进入 Rust 编译；按任务“可行时”约束记录为环境阻断。源码回归命令 `cargo test` 通过，输出包含 `test result: ok` 和 `Finished test profile`。
 
-## 3. Query 与可观测性
+## 3. 查询与可观测性
 
 - [x] BZL-006 运行 Bazel query 检查 App 和模块依赖，并记录摘要。
 

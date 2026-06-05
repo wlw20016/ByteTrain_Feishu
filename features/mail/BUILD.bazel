@@ -10,6 +10,7 @@ MAIL_DOMAIN_SRCS = [
 
 MAIL_DATA_SRCS = [
     "data/MockMailRepository.kt",
+    "data/RuntimeMailSdkClient.kt",
     "data/SdkMailRepository.kt",
 ]
 

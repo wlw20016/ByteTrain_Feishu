@@ -22,13 +22,13 @@ Bazel target：
 - `//shared/navigation:navigation`
 - `//shared/ui:ui_models`
 
-BZL-006 query 证据：
+BZL-FINAL query 证据：
 
 ```powershell
 bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"
 ```
 
-结果摘要：通过。输出包含 `android_binary rule //app:app`、`kt_android_library rule //app:app_lib`，以及上方列出的 feature/shared 显式依赖。query 同时显示 app manifest、`MainActivity.kt` 和两个 app drawable 资源文件属于 app target 边界。
+结果摘要：2026-06-05 通过。输出包含 `android_binary rule //app:app`、`kt_android_library rule //app:app_lib`，以及上方列出的 feature/shared 显式依赖。query 同时显示 app manifest、`AppRepositoryProvider.kt`、`MainActivity.kt` 和两个 app drawable 资源文件属于 app target 边界。最终 query 未引入新的跨层依赖，只补充了 app 内部 provider 源文件。
 
 ## 功能模块
 
@@ -73,3 +73,7 @@ Bazel target：
 
 - `//sdk/rust:bytetrain_feed_sdk`
 - `//sdk/rust:bytetrain_feed_sdk_test`
+
+## AI-ARCH audit
+
+2026-06-05 复核：本文档已按最终 `deps(//app:app, 2)` query 输出更新。最终 query 未引入新的跨层依赖；`AppRepositoryProvider.kt` 仅属于 app 内部组合根源文件。
