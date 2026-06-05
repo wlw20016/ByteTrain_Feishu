@@ -15,12 +15,10 @@ import android.window.OnBackInvokedDispatcher
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.bytetrain.feishuclone.features.mail.data.MockMailRepository
 import com.bytetrain.feishuclone.features.mail.domain.MailItem
 import com.bytetrain.feishuclone.features.mail.mapper.toUnifiedListItem
 import com.bytetrain.feishuclone.features.mail.ui.createMailDetailScreen
 import com.bytetrain.feishuclone.features.mail.ui.createMailListScreen
-import com.bytetrain.feishuclone.features.message.data.MockMessageRepository
 import com.bytetrain.feishuclone.features.message.domain.MessageItem
 import com.bytetrain.feishuclone.features.message.mapper.toUnifiedListItem
 import com.bytetrain.feishuclone.features.message.ui.createMessageDetailScreen
@@ -39,8 +37,9 @@ class MainActivity : Activity() {
     private var currentRoute: String = AppRoutes.MESSAGE_LIST
     private var selectedMessageItem: UnifiedListItem? = null
     private var selectedMailItem: UnifiedListItem? = null
-    private val messageRepository = MockMessageRepository()
-    private val mailRepository = MockMailRepository()
+    private val repositoryProvider = AppRepositoryProvider()
+    private val messageRepository = repositoryProvider.createMessageRepository()
+    private val mailRepository = repositoryProvider.createMailRepository()
     private val loadedMessages = mutableListOf<MessageItem>()
     private val loadedMails = mutableListOf<MailItem>()
     private var nextMessageCursor: String? = null
@@ -277,7 +276,7 @@ class MainActivity : Activity() {
         contentContainer.addView(createMessageListScreen(
             context = this,
             items = items,
-            totalLabel = "Showing ${items.size} of 10000 mock conversations",
+            totalLabel = "Showing ${items.size} of 10000 conversations",
             hasMore = hasMoreMessages,
             isLoadingMore = isLoadingMoreMessages,
             initialScrollY = messageListScrollY,
@@ -326,7 +325,7 @@ class MainActivity : Activity() {
         contentContainer.addView(createMailListScreen(
             context = this,
             items = items,
-            totalLabel = "Showing ${items.size} of 10000 mock emails",
+            totalLabel = "Showing ${items.size} of 10000 emails",
             hasMore = hasMoreMails,
             isLoadingMore = isLoadingMoreMails,
             initialScrollY = mailListScrollY,

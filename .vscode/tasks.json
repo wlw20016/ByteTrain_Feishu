@@ -1,0 +1,95 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Bazel: build app",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ide-build.ps1",
+        "-Target",
+        "app"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Gradle: assemble debug",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ide-build.ps1",
+        "-Target",
+        "gradle-app"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Bazel: build proto",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ide-build.ps1",
+        "-Target",
+        "proto"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Bazel: build features",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ide-build.ps1",
+        "-Target",
+        "features"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Rust: test SDK",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ide-build.ps1",
+        "-Target",
+        "rust"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Bazel: query app deps",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ide-build.ps1",
+        "-Target",
+        "query-app-deps"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

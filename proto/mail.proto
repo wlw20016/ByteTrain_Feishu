@@ -4,6 +4,15 @@ package bytetrain.feed;
 
 import "proto/paging.proto";
 
+enum MailType {
+  MAIL_TYPE_UNSPECIFIED = 0;
+  MAIL_TYPE_REMINDER = 1;
+  MAIL_TYPE_SYSTEM = 2;
+  MAIL_TYPE_COLLABORATION = 3;
+  MAIL_TYPE_REPORT = 4;
+  MAIL_TYPE_UPDATE = 5;
+}
+
 message MailItem {
   string id = 1;
   string sender = 2;
@@ -11,6 +20,9 @@ message MailItem {
   string preview = 4;
   int64 timestamp_millis = 5;
   bool unread = 6;
+  int32 attachment_count = 7;
+  MailType mail_type = 8;
+  string action_text = 9;
 }
 
 message MailPageResponse {

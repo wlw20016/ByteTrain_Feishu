@@ -10,6 +10,7 @@ MESSAGE_DOMAIN_SRCS = [
 
 MESSAGE_DATA_SRCS = [
     "data/MockMessageRepository.kt",
+    "data/RuntimeMessageSdkClient.kt",
     "data/SdkMessageRepository.kt",
 ]
 

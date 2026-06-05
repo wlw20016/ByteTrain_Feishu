@@ -1,6 +1,6 @@
 ﻿# 构建命令
 
-当前仓库已经有 Bazel 占位文件，但还没有声明 Android、Kotlin、Rust 或 proto 工具链。
+当前仓库已经完成 Android、Kotlin、Rust 和 proto 的 Bazel 接入。最终交付验收以 Bazel build/test/query 证据为准；Gradle 只保留为历史过渡和本地开发辅助入口。
 
 ## Bazel rules 选型
 
@@ -92,6 +92,42 @@ bazel --batch build //shared/list:list //shared/navigation:navigation //shared/u
 bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4
 bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"
 ```
+
+## Final Bazel delivery verification
+
+BZL-FINAL 记录日期：2026-06-05。
+
+最终验证入口：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-final-bazel-delivery.ps1
+```
+
+该入口只运行 Bazel 命令，不调用 Gradle。iOS、UIKit、AutoLayout 和 Xcode 命令跳过，原因是本仓库为 Android-only 交付。
+
+完整 evidence 文件：
+
+- `docs/ai-context/final-bazel-delivery-evidence.md`
+
+最终验证结果摘要：
+
+| 检查 | 命令 | 结果 |
+| --- | --- | --- |
+| Android app build | `bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Target //app:app up-to-date` 和 `Build completed successfully, 1 total action`。 |
+| Proto build | `bazel build //proto:... --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Target //proto:feed_proto up-to-date` 和 `Build completed successfully, 1 total action`。 |
+| Shared/message/mail Kotlin build | `bazel --batch build //shared/list:list //shared/navigation:navigation //shared/ui:ui_models //features/message:domain //features/message:data //features/message:mapper //features/message:ui //features/message:message //features/mail:domain //features/mail:data //features/mail:mapper //features/mail:ui //features/mail:mail --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Found 13 targets` 和 `Build completed successfully, 1 total action`。 |
+| Rust SDK Bazel test | `bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `//sdk/rust:bytetrain_feed_sdk_test (cached) PASSED` 和 `Build completed successfully, 1 total action`。 |
+| App dependency query | `bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"` | 通过；输出包含 app、message/mail feature 和 shared 显式依赖边界。 |
+
+环境闭环：
+
+- 在普通沙箱内直接执行 `bazel`/`bazel.exe`/`bazelisk` 时曾出现 `Access is denied`/`拒绝访问`，属于本机 Bazel 二进制执行权限或沙箱入口问题，不是源码构建失败。
+- 通过允许执行本机 Bazel 后，被阻塞的 app build 已重新运行并通过；最终脚本也完整运行通过。
+- 详细根因、修复方式和重试命令记录在 `docs/ai-context/common-build-errors.md`。
+
+AI-ARCH 审计：
+
+- 2026-06-05 复核：本文档已覆盖最终 Android-only Bazel 验收入口、结果摘要、Gradle 非最终验收边界和 iOS/Xcode 跳过原因。
 
 BZL-002 验证记录：
 

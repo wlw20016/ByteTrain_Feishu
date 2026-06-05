@@ -1,0 +1,51 @@
+{
+  "name": "bytetrain-vscode-bazel-helper",
+  "displayName": "ByteTrain Bazel Helper",
+  "description": "Prototype VS Code commands for running ByteTrain IDE build helper targets.",
+  "version": "0.0.1",
+  "publisher": "bytetrain",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:bytetrain.bazelHelper.buildApp",
+    "onCommand:bytetrain.bazelHelper.assembleDebug",
+    "onCommand:bytetrain.bazelHelper.buildProto",
+    "onCommand:bytetrain.bazelHelper.buildFeatures",
+    "onCommand:bytetrain.bazelHelper.testRustSdk",
+    "onCommand:bytetrain.bazelHelper.queryAppDeps"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "bytetrain.bazelHelper.buildApp",
+        "title": "Bazel: Build App"
+      },
+      {
+        "command": "bytetrain.bazelHelper.assembleDebug",
+        "title": "Gradle: Assemble Debug"
+      },
+      {
+        "command": "bytetrain.bazelHelper.buildProto",
+        "title": "Bazel: Build Proto"
+      },
+      {
+        "command": "bytetrain.bazelHelper.buildFeatures",
+        "title": "Bazel: Build Features"
+      },
+      {
+        "command": "bytetrain.bazelHelper.testRustSdk",
+        "title": "Rust: Test SDK"
+      },
+      {
+        "command": "bytetrain.bazelHelper.queryAppDeps",
+        "title": "Bazel: Query App Deps"
+      }
+    ]
+  }
+}
