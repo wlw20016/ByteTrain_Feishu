@@ -1,4 +1,33 @@
 package(default_visibility = ["//visibility:public"])
 
-# Placeholder target. Android Bazel rules will be wired in a later change.
+load("@rules_android//rules:rules.bzl", "android_binary")
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+
+kt_android_library(
+    name = "app_lib",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    custom_package = "com.bytetrain.feishuclone",
+    manifest = "src/main/AndroidManifest.xml",
+    resource_files = glob(["src/main/res/**"]),
+    deps = [
+        "//features/mail:data",
+        "//features/mail:domain",
+        "//features/mail:mapper",
+        "//features/mail:ui",
+        "//features/message:data",
+        "//features/message:domain",
+        "//features/message:mapper",
+        "//features/message:ui",
+        "//shared/navigation:navigation",
+        "//shared/ui:ui_models",
+    ],
+)
+
+android_binary(
+    name = "app",
+    custom_package = "com.bytetrain.feishuclone",
+    manifest = "src/main/AndroidManifest.xml",
+    resource_files = glob(["src/main/res/**"]),
+    deps = [":app_lib"],
+)
 

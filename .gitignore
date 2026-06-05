@@ -17,8 +17,10 @@ bazel-*
 
 # Gradle / Android
 .gradle/
+.kotlin/
 build/
 **/build/
+local.properties
 
 # Rust
 target/
@@ -26,3 +28,7 @@ target/
 # IDE
 .idea/
 .vscode/
+*.iml
+
+# Local Bazel overrides
+.bazelrc.local

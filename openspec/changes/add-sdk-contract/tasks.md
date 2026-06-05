@@ -1,4 +1,4 @@
-# Tasks: add-sdk-contract
+﻿# Tasks: add-sdk-contract
 
 ## 1. Proto 契约
 
@@ -10,7 +10,8 @@
 
 - [x] SDK-003 实现 Rust mock 数据模型，并为消息和邮箱生成确定性的 10000 条记录。
 - [x] SDK-004 实现 Rust 消息和邮箱分页 API。
-- [ ] 增加 Rust 单测，覆盖第一页、中间页、最后一页、非法 cursor 和 page size 边界。
+- [x] 增加 Rust 单测，覆盖第一页、中间页、最后一页、非法 cursor 和 page size 边界。
+  - 证据：`sdk/rust/src/lib.rs` 已新增 8 个 Rust 单测，覆盖 message 第一页、mail 中间页、message 最后一页、空 cursor、非法 cursor、越界 cursor、page size 最小/最大边界和越界错误。`cargo test` 通过，输出包含 `running 8 tests`、`8 passed; 0 failed`。
 
 ## 3. 异步与 Adapter 边界
 
@@ -22,6 +23,12 @@
 
 ## 4. 证据
 
-- [ ] 记录 AI 生成的协议建议和人工取舍。
-- [ ] 可运行时记录 `cargo test` 或 Bazel test 结果。
+- [x] 记录 AI 生成的协议建议和人工取舍。
+  - 证据：`openspec/prompt.md` 已记录接口草案阶段的 AI 输出摘要、人工决策和最终结果；`openspec/changes/add-sdk-contract/design.md` 已记录 proto 字段拆分、共享分页语义、cursor 透传、Kotlin adapter 边界和错误映射取舍。
+- [x] 可运行时记录 `cargo test` 或 Bazel test 结果。
+  - 证据：在 `sdk/rust` 下执行 `cargo test` 通过，输出显示 `running 8 tests`、`8 passed; 0 failed`，并且 doc tests 通过。
 - [ ] 更新飞书多维表格中 SDK/proto 任务的 OpenSpec 证据链接。
+
+
+
+

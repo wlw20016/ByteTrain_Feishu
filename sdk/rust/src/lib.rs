@@ -353,3 +353,155 @@ const MAIL_PREVIEWS: [&str; 6] = [
     "Nightly build finished and artifacts are available.",
     "Your assigned course is due later this week.",
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn message_first_page_uses_empty_cursor() {
+        let sdk = MockFeedSdk::with_total_count(45);
+
+        let page = sdk.get_message_page(20, None).expect("first page");
+
+        assert_eq!(page.items.len(), 20);
+        assert_eq!(
+            page.items.first().map(|item| item.id.as_str()),
+            Some("message-1")
+        );
+        assert_eq!(
+            page.items.last().map(|item| item.id.as_str()),
+            Some("message-20")
+        );
+        assert_eq!(page.next_cursor.as_deref(), Some("20"));
+        assert!(page.has_more);
+    }
+
+    #[test]
+    fn mail_middle_page_uses_cursor_as_start_index() {
+        let sdk = MockFeedSdk::with_total_count(100);
+
+        let page = sdk.get_mail_page(20, Some("40")).expect("middle page");
+
+        assert_eq!(page.items.len(), 20);
+        assert_eq!(
+            page.items.first().map(|item| item.id.as_str()),
+            Some("mail-41")
+        );
+        assert_eq!(
+            page.items.last().map(|item| item.id.as_str()),
+            Some("mail-60")
+        );
+        assert_eq!(page.next_cursor.as_deref(), Some("60"));
+        assert!(page.has_more);
+    }
+
+    #[test]
+    fn message_last_page_has_no_next_cursor() {
+        let sdk = MockFeedSdk::with_total_count(45);
+
+        let page = sdk.get_message_page(20, Some("40")).expect("last page");
+
+        assert_eq!(page.items.len(), 5);
+        assert_eq!(
+            page.items.first().map(|item| item.id.as_str()),
+            Some("message-41")
+        );
+        assert_eq!(
+            page.items.last().map(|item| item.id.as_str()),
+            Some("message-45")
+        );
+        assert_eq!(page.next_cursor, None);
+        assert!(!page.has_more);
+    }
+
+    #[test]
+    fn empty_cursor_is_equivalent_to_first_page() {
+        let sdk = MockFeedSdk::with_total_count(12);
+
+        let page = sdk.get_mail_page(5, Some("")).expect("empty cursor");
+
+        assert_eq!(page.items.len(), 5);
+        assert_eq!(
+            page.items.first().map(|item| item.id.as_str()),
+            Some("mail-1")
+        );
+        assert_eq!(page.next_cursor.as_deref(), Some("5"));
+        assert!(page.has_more);
+    }
+
+    #[test]
+    fn invalid_cursor_returns_structured_error() {
+        let sdk = MockFeedSdk::with_total_count(45);
+
+        let error = sdk
+            .get_message_page(20, Some("not-a-number"))
+            .expect_err("invalid cursor");
+
+        assert_eq!(
+            error,
+            SdkError::InvalidCursor {
+                cursor: "not-a-number".to_owned()
+            }
+        );
+    }
+
+    #[test]
+    fn out_of_range_cursor_returns_structured_error() {
+        let sdk = MockFeedSdk::with_total_count(45);
+
+        let error = sdk
+            .get_mail_page(20, Some("46"))
+            .expect_err("cursor out of range");
+
+        assert_eq!(
+            error,
+            SdkError::CursorOutOfRange {
+                cursor: "46".to_owned(),
+                total_count: 45
+            }
+        );
+    }
+
+    #[test]
+    fn page_size_accepts_min_and_max_boundaries() {
+        let sdk = MockFeedSdk::with_total_count(250);
+
+        let min_page = sdk
+            .get_message_page(MIN_PAGE_SIZE, None)
+            .expect("min page size");
+        let max_page = sdk
+            .get_mail_page(MAX_PAGE_SIZE, None)
+            .expect("max page size");
+
+        assert_eq!(min_page.items.len(), MIN_PAGE_SIZE);
+        assert_eq!(min_page.next_cursor.as_deref(), Some("1"));
+        assert!(min_page.has_more);
+        assert_eq!(max_page.items.len(), MAX_PAGE_SIZE);
+        assert_eq!(max_page.next_cursor.as_deref(), Some("200"));
+        assert!(max_page.has_more);
+    }
+
+    #[test]
+    fn page_size_rejects_values_outside_boundaries() {
+        let sdk = MockFeedSdk::with_total_count(45);
+
+        assert_eq!(
+            sdk.get_message_page(0, None).expect_err("zero page size"),
+            SdkError::InvalidPageSize {
+                page_size: 0,
+                min: MIN_PAGE_SIZE,
+                max: MAX_PAGE_SIZE
+            }
+        );
+        assert_eq!(
+            sdk.get_mail_page(MAX_PAGE_SIZE + 1, None)
+                .expect_err("too large page size"),
+            SdkError::InvalidPageSize {
+                page_size: MAX_PAGE_SIZE + 1,
+                min: MIN_PAGE_SIZE,
+                max: MAX_PAGE_SIZE
+            }
+        );
+    }
+}

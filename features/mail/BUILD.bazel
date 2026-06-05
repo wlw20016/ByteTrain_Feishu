@@ -1,6 +1,8 @@
 package(default_visibility = ["//visibility:public"])
 
-# Kotlin and Android rules will be wired in later changes.
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
 MAIL_DOMAIN_SRCS = [
     "domain/MailItem.kt",
     "domain/MailRepository.kt",
@@ -19,3 +21,39 @@ MAIL_UI_SRCS = [
     "ui/MailDetailScreen.kt",
     "ui/MailListScreen.kt",
 ]
+
+kt_jvm_library(
+    name = "domain",
+    srcs = MAIL_DOMAIN_SRCS,
+)
+
+kt_jvm_library(
+    name = "data",
+    srcs = MAIL_DATA_SRCS,
+    deps = [":domain"],
+)
+
+kt_jvm_library(
+    name = "mapper",
+    srcs = MAIL_MAPPER_SRCS,
+    deps = [
+        ":domain",
+        "//shared/ui:ui_models",
+    ],
+)
+
+kt_android_library(
+    name = "ui",
+    srcs = MAIL_UI_SRCS,
+    custom_package = "com.bytetrain.feishuclone.features.mail",
+    deps = ["//shared/ui:ui_models"],
+)
+
+kt_jvm_library(
+    name = "mail",
+    exports = [
+        ":data",
+        ":domain",
+        ":mapper",
+    ],
+)

@@ -3,5 +3,65 @@ module(
     version = "0.1.0",
 )
 
-# Toolchain and dependency declarations will be added by later Bazel changes.
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "rules_kotlin", version = "2.3.20")
+bazel_dep(name = "rules_android", version = "0.7.2")
+bazel_dep(name = "rules_rust", version = "0.70.0")
+bazel_dep(name = "rules_jvm_external", version = "6.9")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "android_ide_common_30_1_3",
+    aar_import_bzl_label = "@rules_android//rules:rules.bzl",
+    known_contributing_modules = [
+        "bytetrain_feishu_clone_android",
+        "rules_android",
+    ],
+    repositories = [
+        "https://maven.aliyun.com/repository/google",
+        "https://maven.aliyun.com/repository/central",
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    use_starlark_android_rules = True,
+)
+maven.install(
+    name = "rules_android_maven",
+    aar_import_bzl_label = "@rules_android//rules:rules.bzl",
+    known_contributing_modules = [
+        "bytetrain_feishu_clone_android",
+        "rules_android",
+    ],
+    repositories = [
+        "https://maven.aliyun.com/repository/google",
+        "https://maven.aliyun.com/repository/central",
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    use_starlark_android_rules = True,
+)
+
+remote_android_extensions = use_extension(
+    "@rules_android//bzlmod_extensions:android_extensions.bzl",
+    "remote_android_tools_extensions",
+)
+use_repo(remote_android_extensions, "android_tools")
+
+android_sdk_repository_extension = use_extension(
+    "@rules_android//rules/android_sdk_repository:rule.bzl",
+    "android_sdk_repository_extension",
+)
+use_repo(android_sdk_repository_extension, "androidsdk")
+register_toolchains("@androidsdk//:sdk-toolchain", "@androidsdk//:all")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2021",
+    urls = [
+        "https://mirrors.ustc.edu.cn/rust-static/dist/{}.tar.xz",
+        "https://static.rust-lang.org/dist/{}.tar.xz",
+    ],
+    versions = ["1.96.0"],
+)
+use_repo(rust, "rust_toolchains")
 

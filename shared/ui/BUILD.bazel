@@ -1,6 +1,12 @@
 package(default_visibility = ["//visibility:public"])
 
-# Kotlin rule wiring will be added with the Android/Bazel toolchain change.
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
 UI_MODEL_SRCS = [
     "UnifiedUiModels.kt",
 ]
+
+kt_jvm_library(
+    name = "ui_models",
+    srcs = UI_MODEL_SRCS,
+)
