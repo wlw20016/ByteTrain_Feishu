@@ -13,7 +13,8 @@
 
 ## 3. IDE 协作
 
-- [ ] IDE-001 新增 `docs/ai-context/ide-bazel-workflow.md`，说明 Trae/VS Code 与 Bazel 的协作方式。
+- [x] IDE-001 新增 `docs/ai-context/ide-bazel-workflow.md`，说明 Trae/VS Code 与 Bazel 的协作方式。
+  - 证据：`docs/ai-context/ide-bazel-workflow.md` 已说明 IDE 与 Bazel 的角色分工、Android UI Gradle 验证、Bazel build/query 工作流、Rust/proto/BUILD 文件协作、构建失败记录和 AI 上下文读取方式；`openspec validate improve-ai-context --strict` 通过。
 - [ ] IDE-002 设计最小 Trae/VS Code 构建辅助或插件方案；时间允许时实现最小脚本或入口。
 
 ## 4. 验收与归档
