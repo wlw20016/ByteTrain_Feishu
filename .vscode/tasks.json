@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "2.0.0",
   "tasks": [
     {
@@ -9,7 +9,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}/scripts/ide-build.ps1",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
         "-Target",
         "app"
       ],
@@ -24,7 +24,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}/scripts/ide-build.ps1",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
         "-Target",
         "run-app"
       ],
@@ -39,7 +39,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}/scripts/ide-build.ps1",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
         "-Target",
         "gradle-app"
       ],
@@ -54,7 +54,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}/scripts/ide-build.ps1",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
         "-Target",
         "gradle-app"
       ],
@@ -69,7 +69,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}/scripts/ide-build.ps1",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
         "-Target",
         "proto"
       ],
@@ -84,7 +84,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}/scripts/ide-build.ps1",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
         "-Target",
         "features"
       ],
@@ -99,7 +99,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}/scripts/ide-build.ps1",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
         "-Target",
         "rust"
       ],
@@ -114,7 +114,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}/scripts/ide-build.ps1",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
         "-Target",
         "query-app-deps"
       ],

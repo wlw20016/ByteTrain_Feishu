@@ -1,4 +1,4 @@
-# Design: wire-bazel-build
+﻿# Design: wire-bazel-build
 
 ## 增量构建策略
 
@@ -27,9 +27,9 @@ Bazel 应从小而稳定的 target 开始接入，再推进到完整 App：
 
 每次构建相关变更都应更新或验证：
 
-- `docs/ai-context/build-commands.md`
-- `docs/ai-context/module-boundaries.md`
-- `docs/ai-context/common-build-errors.md`
+- `docs/ai-context/build-system/build-commands.md`
+- `docs/project/module-boundaries.md`
+- `docs/ai-context/build-system/common-build-errors.md`
 
 ## Query 证据
 

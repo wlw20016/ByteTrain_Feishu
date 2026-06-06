@@ -13,8 +13,8 @@
 - [x] 增加 Rust SDK 骨架。
   - 证据：`sdk/rust/Cargo.toml`、`sdk/rust/src/lib.rs`。
 - [x] 增加 AI 可读取上下文文档。
-  - 证据：`docs/ai-context/project-structure.md`、`build-commands.md`、`module-boundaries.md`、`common-build-errors.md`。
+  - 证据：`docs/project/project-structure.md`、`build-commands.md`、`module-boundaries.md`、`common-build-errors.md`。
 - [x] 增加 OpenSpec 项目文件和 Prompt 记录。
   - 证据：`openspec/project.md`、`openspec/prompt.md`、当前 change 目录。
 - [x] 验证真实 Bazel 构建。
-  - 证据：该初始化阶段遗留验证已由 `verify-final-bazel-delivery` 关闭；`docs/ai-context/final-bazel-delivery-evidence.md` 记录 app、proto、shared/feature Kotlin、Rust SDK test 和 app dependency query 均通过；`openspec/changes/verify-final-bazel-delivery/tasks.md` 已记录命令输出摘要。
+  - 证据：该初始化阶段遗留验证已由 `verify-final-bazel-delivery` 关闭；`docs/evidence/final-bazel-delivery-evidence.md` 记录 app、proto、shared/feature Kotlin、Rust SDK test 和 app dependency query 均通过；`openspec/changes/verify-final-bazel-delivery/tasks.md` 已记录命令输出摘要。

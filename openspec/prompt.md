@@ -1,4 +1,4 @@
-# AI Prompt 沉淀记录
+﻿# AI Prompt 沉淀记录
 
 本文档记录项目中可复用的 Prompt、AI 输出摘要、人工决策和最终结果。
 
@@ -189,7 +189,7 @@
 
 ### 最终结果
 
-`connect-sdk-protobuf-runtime` 完成 app provider、runtime SDK clients、SDK-backed repositories、focused unit tests、Rust tests、Bazel proto/app/SDK 验证和 `docs/ai-context/sdk-adapter-evidence.md`。
+`connect-sdk-protobuf-runtime` 完成 app provider、runtime SDK clients、SDK-backed repositories、focused unit tests、Rust tests、Bazel proto/app/SDK 验证和 `docs/ai-context/sdk/sdk-adapter-evidence.md`。
 
 ## 8. Bazel 与 IDE 工程化闭环
 
@@ -207,7 +207,7 @@
 
 - 建议 pin `rules_android`、`rules_kotlin`、`rules_proto`、`rules_rust`。
 - 建议按 proto、shared、feature、app、Rust SDK、query 顺序接入 Bazel。
-- 建议新增 `scripts/ide-build.ps1` 和 VS Code extension prototype，所有 IDE 命令复用脚本。
+- 建议新增 `scripts/commands/ide-build.ps1` 和 VS Code extension prototype，所有 IDE 命令复用脚本。
 
 ### 人工决策
 

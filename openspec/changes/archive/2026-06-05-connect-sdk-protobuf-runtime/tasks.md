@@ -21,7 +21,7 @@
 
 ## 4. 文档
 
-- [x] SDK-RT-011 更新 `docs/ai-context/sdk-adapter-evidence.md`，记录最终运行时路径和剩余限制。
+- [x] SDK-RT-011 更新 `docs/ai-context/sdk/sdk-adapter-evidence.md`，记录最终运行时路径和剩余限制。
 - [x] SDK-RT-012 在标记完成前，更新本 `tasks.md`，补充命令输出摘要和实现证据。
 
 ## 实现证据
@@ -130,7 +130,7 @@
 
 ### SDK-RT-011
 
-- 文档更新：已更新 `docs/ai-context/sdk-adapter-evidence.md`，从早期 `SDK-006` adapter boundary 说明扩展为 `connect-sdk-protobuf-runtime` 最终运行时证据。
+- 文档更新：已更新 `docs/ai-context/sdk/sdk-adapter-evidence.md`，从早期 `SDK-006` adapter boundary 说明扩展为 `connect-sdk-protobuf-runtime` 最终运行时证据。
 - 最终运行时路径：文档记录 `MainActivity -> AppRepositoryProvider -> SdkMessageRepository(RuntimeMessageSdkClient(), MockMessageRepository())` 和 `MainActivity -> AppRepositoryProvider -> SdkMailRepository(RuntimeMailSdkClient(), MockMailRepository())`。
 - UI 边界：文档明确 UI 仍通过 `MessageRepository` / `MailRepository` 的 `loadPage(pageSize, cursor)` 使用数据，不导入 SDK DTO、protobuf DTO、Rust 类型或 runtime bridge 实现细节。
 - Provider 行为：文档记录默认 `sdkRuntimeEnabled = true`，SDK-backed repository 构造失败时返回 mock fallback，SDK 加载失败时由 SDK repository 委托 fallback 并保留原始 `pageSize` / `cursor`。
