@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "fwcd.kotlin",
+    "rust-lang.rust-analyzer",
+    "BazelBuild.vscode-bazel",
+    "zxh404.vscode-proto3",
+    "redhat.java",
+    "vscjava.vscode-gradle"
+  ]
+}

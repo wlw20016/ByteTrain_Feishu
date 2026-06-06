@@ -31,3 +31,15 @@ android_binary(
     deps = [":app_lib"],
 )
 
+genrule(
+    name = "run_app",
+    srcs = [
+        ":app",
+        "run_app.cmd.template",
+    ],
+    outs = ["run_app.cmd"],
+    cmd = "cp $(location run_app.cmd.template) $@",
+    cmd_bat = "copy /Y $(location run_app.cmd.template) $@",
+    executable = True,
+)
+

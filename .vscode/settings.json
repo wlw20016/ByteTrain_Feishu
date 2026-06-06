@@ -1,0 +1,15 @@
+{
+  "files.associations": {
+    "BUILD": "starlark",
+    "BUILD.bazel": "starlark",
+    "MODULE.bazel": "starlark",
+    "*.bazel": "starlark",
+    "*.bzl": "starlark",
+    "*.proto": "proto"
+  },
+  "rust-analyzer.linkedProjects": [
+    "sdk/rust/Cargo.toml"
+  ],
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "kotlin.languageServer.enabled": true
+}

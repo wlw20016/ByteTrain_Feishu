@@ -13,11 +13,16 @@
   ],
   "activationEvents": [
     "onCommand:bytetrain.bazelHelper.buildApp",
+    "onCommand:bytetrain.bazelHelper.runApp",
     "onCommand:bytetrain.bazelHelper.assembleDebug",
     "onCommand:bytetrain.bazelHelper.buildProto",
     "onCommand:bytetrain.bazelHelper.buildFeatures",
     "onCommand:bytetrain.bazelHelper.testRustSdk",
-    "onCommand:bytetrain.bazelHelper.queryAppDeps"
+    "onCommand:bytetrain.bazelHelper.queryAppDeps",
+    "onCommand:bytetrain.bazelHelper.copyDiagnosticContext",
+    "onCommand:bytetrain.bazelHelper.openBuildCommands",
+    "onCommand:bytetrain.bazelHelper.openModuleBoundaries",
+    "onCommand:bytetrain.bazelHelper.openCommonBuildErrors"
   ],
   "main": "./src/extension.js",
   "contributes": {
@@ -25,6 +30,10 @@
       {
         "command": "bytetrain.bazelHelper.buildApp",
         "title": "Bazel: Build App"
+      },
+      {
+        "command": "bytetrain.bazelHelper.runApp",
+        "title": "Bazel: Run App"
       },
       {
         "command": "bytetrain.bazelHelper.assembleDebug",
@@ -45,6 +54,22 @@
       {
         "command": "bytetrain.bazelHelper.queryAppDeps",
         "title": "Bazel: Query App Deps"
+      },
+      {
+        "command": "bytetrain.bazelHelper.copyDiagnosticContext",
+        "title": "Bazel: Copy Diagnostic Context"
+      },
+      {
+        "command": "bytetrain.bazelHelper.openBuildCommands",
+        "title": "Bazel: Open Build Commands"
+      },
+      {
+        "command": "bytetrain.bazelHelper.openModuleBoundaries",
+        "title": "Bazel: Open Module Boundaries"
+      },
+      {
+        "command": "bytetrain.bazelHelper.openCommonBuildErrors",
+        "title": "Bazel: Open Common Build Errors"
       }
     ]
   }

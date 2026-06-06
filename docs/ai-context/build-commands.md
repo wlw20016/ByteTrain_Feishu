@@ -93,7 +93,7 @@ bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4
 bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"
 ```
 
-## Final Bazel delivery verification
+## 最终 Bazel 交付验证
 
 BZL-FINAL 记录日期：2026-06-05。
 
@@ -113,10 +113,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-final-bazel
 
 | 检查 | 命令 | 结果 |
 | --- | --- | --- |
-| Android app build | `bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Target //app:app up-to-date` 和 `Build completed successfully, 1 total action`。 |
-| Proto build | `bazel build //proto:... --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Target //proto:feed_proto up-to-date` 和 `Build completed successfully, 1 total action`。 |
+| Android app 构建 | `bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Target //app:app up-to-date` 和 `Build completed successfully, 1 total action`。 |
+| Proto 构建 | `bazel build //proto:... --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Target //proto:feed_proto up-to-date` 和 `Build completed successfully, 1 total action`。 |
 | Shared/message/mail Kotlin build | `bazel --batch build //shared/list:list //shared/navigation:navigation //shared/ui:ui_models //features/message:domain //features/message:data //features/message:mapper //features/message:ui //features/message:message //features/mail:domain //features/mail:data //features/mail:mapper //features/mail:ui //features/mail:mail --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Found 13 targets` 和 `Build completed successfully, 1 total action`。 |
-| Rust SDK Bazel test | `bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `//sdk/rust:bytetrain_feed_sdk_test (cached) PASSED` 和 `Build completed successfully, 1 total action`。 |
+| Rust SDK Bazel 测试 | `bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `//sdk/rust:bytetrain_feed_sdk_test (cached) PASSED` 和 `Build completed successfully, 1 total action`。 |
 | App dependency query | `bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"` | 通过；输出包含 app、message/mail feature 和 shared 显式依赖边界。 |
 
 环境闭环：
@@ -151,6 +151,57 @@ BZL-006 query 记录：
 - 命令：`bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"`
 - 结果：通过，输出包含 `android_binary rule //app:app`、`kt_android_library rule //app:app_lib`、message/mail feature targets、`//shared/navigation:navigation` 和 `//shared/ui:ui_models`。
 - 说明：query 使用 `--notool_deps --noimplicit_deps` 排除 Android/Bazel 工具链隐式依赖，聚焦本仓 app、feature、shared 显式边界。更大的 `deps(//app:app)` 查询会包含大量外部 tool deps，不适合直接作为人工评审摘要。
+
+## Bazel run 支持
+
+BZL-RUN 记录日期：2026-06-06。
+
+运行策略：
+
+- `//app:run_app` 是由 `app/BUILD.bazel` 生成的 Bazel-owned run wrapper。
+- 该 wrapper 依赖 `//app:app`，并使用生成 runner 旁边的 Bazel-built APK：`bazel-bin/app/app.apk`。
+- 该 wrapper 不读取 Gradle outputs。
+- Android run 验证要求已安装 Android SDK Platform-Tools，`ANDROID_HOME` 可用或 `adb.exe` 位于 `PATH`，并且 `adb devices` 能看到在线设备或模拟器。
+
+已验证命令：
+
+```powershell
+bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4
+bazel --batch run --curses=no --show_progress_rate_limit=60 //app:run_app
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target run-app
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-ide-003.ps1
+```
+
+验证结果：
+
+| 检查 | 结果 |
+| --- | --- |
+| App 构建 | 通过。输出包含 `Target //app:app up-to-date`、`bazel-bin/app/app.apk` 和 `Build completed successfully, 1 total action`。 |
+| Bazel run target | 已进入 wrapper 的 no-device diagnostic path。输出包含 Bazel APK 路径、`D:\Android\AndroidSDK\platform-tools\adb.exe`、`[run-app] No online Android device or emulator was found.`，以及没有设备条目的 `List of devices attached`。 |
+| IDE helper run target | 通过本环境的 output channel 行为验证：`scripts/ide-build.ps1 -Target run-app` 输出 helper banner、工作目录、精确 Bazel 命令和相同 no-device diagnostic lines，随后以 `Bazel Android app run reported a run prerequisite or launch failure.` 失败。 |
+| VS Code helper 一致性 | 通过。新增 `run-app` 命令和 task 后，`scripts/check-ide-003.ps1` 输出 `IDE-PLUG check passed.`。 |
+
+环境说明：
+
+- 在受限 shell 中直接运行 `bazel` 仍会在 Bazel analysis 前输出 `Access is denied.`。上述验证已通过获准的本机 Bazel 执行路径重跑，和既有 BZL-FINAL-009 环境说明一致。
+- 2026-06-06 本机没有连接设备或模拟器，因此未尝试 install 和 activity launch。这是设备前置条件阻塞，不是 APK build failure。
+
+## Rust async/protobuf SDK 验证
+
+`complete-rust-sdk-async-protobuf` 没有新增 Bazel target 或外部 Rust crate，`sdk/rust/BUILD.bazel` 继续暴露：
+
+- `//sdk/rust:bytetrain_feed_sdk`
+- `//sdk/rust:bytetrain_feed_sdk_test`
+
+已验证命令：
+
+```powershell
+cargo test --manifest-path sdk/rust/Cargo.toml
+bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4
+```
+
+`cargo test` 结果：14 个 Rust 单测通过，doc-tests 0 个。Bazel 结果记录在本 change 的 tasks 中。
+
 规划中的命令：
 
 ```bash
