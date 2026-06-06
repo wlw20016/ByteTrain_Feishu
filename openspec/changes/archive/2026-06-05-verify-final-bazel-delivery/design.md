@@ -1,4 +1,4 @@
-## Overview
+﻿## Overview
 
 This change establishes final Bazel verification as the source of truth for course acceptance. Gradle remains a development convenience and historical transition artifact, but final verification uses Bazel commands.
 
@@ -8,7 +8,7 @@ The verification package should cover:
 
 - App build: `bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4`
 - Proto build: `bazel build //proto:... --curses=no --show_progress_rate_limit=60 --jobs=4`
-- Shared/feature Kotlin build: the target set currently recorded in `docs/ai-context/build-commands.md`
+- Shared/feature Kotlin build: the target set currently recorded in `docs/ai-context/build-system/build-commands.md`
 - Rust SDK Bazel test: `bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4`
 - Dependency query: `bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"`
 

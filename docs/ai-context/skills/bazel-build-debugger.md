@@ -11,10 +11,10 @@
 
   排查前先读取：
 
-  - `docs/ai-context/build-commands.md`
-  - `docs/ai-context/common-build-errors.md`
-  - `docs/ai-context/module-boundaries.md`
-  - `docs/ai-context/ide-bazel-workflow.md`
+  - `docs/ai-context/build-system/build-commands.md`
+  - `docs/ai-context/build-system/common-build-errors.md`
+  - `docs/project/module-boundaries.md`
+  - `docs/ai-context/build-system/ide-bazel-workflow.md`
   - `.bazelrc`
   - `MODULE.bazel`
   - 相关目录下的 `BUILD.bazel`
@@ -36,20 +36,24 @@
   命令行入口：
 
   ```powershell
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target app
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target proto
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target features
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target query-app-deps
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\ide-build.ps1 -Target app
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\ide-build.ps1 -Target proto
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\ide-build.ps1 -Target features
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\ide-build.ps1 -Target query-app-deps
+  ```
 
   插件输出通道 ByteTrain Bazel Helper 是标准日志来源。日志必须包含 Working directory、Command、stdout/stderr 和 Exit
   code。
 
   注意：rust helper 当前执行 cargo test，只能作为 Rust 逻辑快速验证。最终 Bazel Rust 验证仍使用：
 
+  ```powershell
   bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4
+  ```
 
   ## 标准 Bazel 验证命令
 
+  ```powershell
   bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4
   bazel build //proto:... --curses=no --show_progress_rate_limit=60 --jobs=4
   bazel --batch build //shared/list:list //shared/navigation:navigation //shared/ui:ui_models //features/
@@ -58,7 +62,8 @@
   --show_progress_rate_limit=60 --jobs=4
   bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4
   bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-final-bazel-delivery.ps1
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\verify-final-bazel-delivery.ps1
+  ```
 
   ## 诊断流程
 
@@ -76,7 +81,7 @@
 
   ### 2. 快速匹配已知故障
 
-  先查 docs/ai-context/common-build-errors.md。重点匹配：
+  先查 `docs/ai-context/build-system/common-build-errors.md`。重点匹配：
 
   - Access is denied：通常是 Bazel 二进制或受限入口问题，不是源码问题。
   - GitHub、Go、Maven Google 超时：通常是 Bzlmod 外部依赖下载问题。
@@ -138,14 +143,14 @@
   - 成功输出摘要
   - 残余风险
 
-  如果是可复用问题，更新 docs/ai-context/common-build-errors.md。如果修改了 BUILD/MODULE 或 target 边界，同步更新 docs/
-  ai-context/build-commands.md 或 docs/ai-context/module-boundaries.md。
+  如果是可复用问题，更新 `docs/ai-context/build-system/common-build-errors.md`。如果修改了 BUILD/MODULE 或 target 边界，同步更新
+  `docs/ai-context/build-system/build-commands.md` 或 `docs/project/module-boundaries.md`。
 
   ## 禁止事项
 
   - 不要在没有完整日志时直接给修复结论。
   - 不要把环境问题误判为源码问题。
-  - 不要新增与 scripts/ide-build.ps1 不一致的命令入口。
+  - 不要新增与 scripts/commands/ide-build.ps1 不一致的命令入口。
   - 不要让 shared 依赖 feature 或 app。
   - 不要让 feature 反向依赖 app。
   - 不要把真实构建失败只留在聊天记录里。

@@ -1,6 +1,6 @@
-## Why
+﻿## Why
 
-The project currently provides `scripts/ide-build.ps1` and `.vscode/tasks.json`, which satisfy a minimal IDE build entry. The course requirement also mentions producing a VS Code plugin or plugin-shaped capability, so this change scopes a small extension prototype without expanding into a full IDE platform project.
+The project currently provides `scripts/commands/ide-build.ps1` and `.vscode/tasks.json`, which satisfy a minimal IDE build entry. The course requirement also mentions producing a VS Code plugin or plugin-shaped capability, so this change scopes a small extension prototype without expanding into a full IDE platform project.
 
 ## What Changes
 
@@ -8,7 +8,7 @@ The project currently provides `scripts/ide-build.ps1` and `.vscode/tasks.json`,
 - Expose commands for app build, proto build, feature build, Rust SDK test, and app dependency query.
 - Capture command output, exit code, and working directory in an IDE-visible output channel or equivalent log.
 - Document Trae compatibility through VS Code task reuse or extension command reuse.
-- Keep `scripts/ide-build.ps1` as the single source of build command truth.
+- Keep `scripts/commands/ide-build.ps1` as the single source of build command truth.
 
 ## Capabilities
 
@@ -24,6 +24,6 @@ The project currently provides `scripts/ide-build.ps1` and `.vscode/tasks.json`,
 
 - `.vscode/`
 - optional extension prototype directory under `tools/` or `ide/`
-- `scripts/ide-build.ps1`
-- `docs/ai-context/ide-bazel-workflow.md`
+- `scripts/commands/ide-build.ps1`
+- `docs/ai-context/build-system/ide-bazel-workflow.md`
 - IDE verification scripts

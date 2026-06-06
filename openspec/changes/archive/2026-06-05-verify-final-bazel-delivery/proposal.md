@@ -1,4 +1,4 @@
-## Why
+﻿## Why
 
 The repository records historical Bazel success for app, proto, feature, and query targets, but final course acceptance needs a current, repeatable Bazel verification package. This change creates a final Bazel delivery checklist and closes environment blockers such as local Bazel access or stale process issues.
 
@@ -23,7 +23,7 @@ The repository records historical Bazel success for app, proto, feature, and que
 ## Impact
 
 - `scripts/`
-- `docs/ai-context/build-commands.md`
-- `docs/ai-context/common-build-errors.md`
-- `docs/ai-context/module-boundaries.md`
+- `docs/ai-context/build-system/build-commands.md`
+- `docs/ai-context/build-system/common-build-errors.md`
+- `docs/project/module-boundaries.md`
 - Bazel output artifacts and verification records

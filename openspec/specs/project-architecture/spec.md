@@ -1,4 +1,4 @@
-# 项目架构能力
+﻿# 项目架构能力
 
 ## Purpose
 
@@ -11,7 +11,7 @@
 #### Scenario: AI 读取项目结构
 
 - Given AI 助手需要理解仓库
-- When 它打开 `docs/ai-context/project-structure.md`
+- When 它打开 `docs/project/project-structure.md`
 - Then 它可以识别每个顶层模块及其职责
 
 ### Requirement: 重要变更必须可追踪
@@ -31,7 +31,7 @@
 #### Scenario: AI 读取项目结构
 
 - Given AI 助手需要理解仓库
-- When 它打开 `docs/ai-context/project-structure.md`
+- When 它打开 `docs/project/project-structure.md`
 - Then 它可以识别每个顶层模块及其职责
 
 ### Requirement: Prompt 证据 MUST 存储在 OpenSpec 中

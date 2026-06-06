@@ -45,15 +45,15 @@ const COMMANDS = [
 const DOCUMENT_COMMANDS = [
   {
     id: "bytetrain.bazelHelper.openBuildCommands",
-    relativePath: path.join("docs", "ai-context", "build-commands.md"),
+    relativePath: path.join("docs", "ai-context", "build-system", "build-commands.md"),
   },
   {
     id: "bytetrain.bazelHelper.openModuleBoundaries",
-    relativePath: path.join("docs", "ai-context", "module-boundaries.md"),
+    relativePath: path.join("docs", "project", "module-boundaries.md"),
   },
   {
     id: "bytetrain.bazelHelper.openCommonBuildErrors",
-    relativePath: path.join("docs", "ai-context", "common-build-errors.md"),
+    relativePath: path.join("docs", "ai-context", "build-system", "common-build-errors.md"),
   },
 ];
 
@@ -93,7 +93,7 @@ function activate(context) {
 
 function runTarget(command, output) {
   const workspaceRoot = getWorkspaceRoot();
-  const scriptPath = path.join(workspaceRoot, "scripts", "ide-build.ps1");
+  const scriptPath = path.join(workspaceRoot, "scripts", "commands", "ide-build.ps1");
   const args = [
     "-NoProfile",
     "-ExecutionPolicy",

@@ -20,8 +20,8 @@
 ## 2. 验证
 
 - [x] TEST-005 新增并运行聚焦脚本，验证导航图标资源、自定义 tab 渲染、选中态反馈、无障碍标签和 mock 会话名格式。
-  - 证据：`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-005.ps1`、`cmd /c openspec validate polish-ui-navigation-names --strict` 和 `.\gradlew.bat :app:assembleDebug` 均通过。
+  - 证据：`powershell -ExecutionPolicy Bypass -File .\scripts\checks\ui\check-ui-005.ps1`、`cmd /c openspec validate polish-ui-navigation-names --strict` 和 `.\gradlew.bat :app:assembleDebug` 均通过。
 - [x] TEST-006 新增并运行聚焦检查，覆盖聊天式详情页、系统返回导航和滚动位置恢复。
-  - 证据：`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-008.ps1`、`powershell -ExecutionPolicy Bypass -File .\scripts\check-msg-006.ps1`、`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-006.ps1`、`cmd /c openspec validate polish-ui-navigation-names --strict` 和 `.\gradlew.bat :app:assembleDebug` 均通过。
+  - 证据：`powershell -ExecutionPolicy Bypass -File .\scripts\checks\ui\check-ui-008.ps1`、`powershell -ExecutionPolicy Bypass -File .\scripts\checks\message\check-msg-006.ps1`、`powershell -ExecutionPolicy Bypass -File .\scripts\checks\mail\check-mail-006.ps1`、`cmd /c openspec validate polish-ui-navigation-names --strict` 和 `.\gradlew.bat :app:assembleDebug` 均通过。
 - [x] TEST-007 新增并运行聚焦检查，覆盖滚动触发加载更多和追加数据后的滚动位置保持。
-  - 证据：`powershell -ExecutionPolicy Bypass -File .\scripts\check-ui-011.ps1`、`powershell -ExecutionPolicy Bypass -File .\scripts\check-msg-005.ps1`、`powershell -ExecutionPolicy Bypass -File .\scripts\check-mail-005.ps1`、`cmd /c openspec validate polish-ui-navigation-names --strict` 和 `.\gradlew.bat :app:assembleDebug` 均通过。
+  - 证据：`powershell -ExecutionPolicy Bypass -File .\scripts\checks\ui\check-ui-011.ps1`、`powershell -ExecutionPolicy Bypass -File .\scripts\checks\message\check-msg-005.ps1`、`powershell -ExecutionPolicy Bypass -File .\scripts\checks\mail\check-mail-005.ps1`、`cmd /c openspec validate polish-ui-navigation-names --strict` 和 `.\gradlew.bat :app:assembleDebug` 均通过。

@@ -1,6 +1,6 @@
-## Overview
+﻿## Overview
 
-This change adds a plugin-shaped IDE integration while preserving the current script-first architecture. The plugin prototype must call `scripts/ide-build.ps1` rather than duplicating Bazel commands.
+This change adds a plugin-shaped IDE integration while preserving the current script-first architecture. The plugin prototype must call `scripts/commands/ide-build.ps1` rather than duplicating Bazel commands.
 
 ## Prototype Shape
 
@@ -8,7 +8,7 @@ Preferred implementation:
 
 - Create a small VS Code extension prototype under `tools/vscode-bazel-helper/`.
 - Provide `package.json` command declarations.
-- Provide an extension entry that runs PowerShell with `scripts/ide-build.ps1 -Target <name>`.
+- Provide an extension entry that runs PowerShell with `scripts/commands/ide-build.ps1 -Target <name>`.
 - Write command output to a named output channel.
 - Surface non-zero exit codes clearly.
 
@@ -33,13 +33,13 @@ Trae compatibility should be documented as one of:
 
 - Trae reads `.vscode/tasks.json`.
 - Trae can invoke the same extension commands.
-- Trae can call `scripts/ide-build.ps1` directly.
+- Trae can call `scripts/commands/ide-build.ps1` directly.
 
 ## Verification
 
 Verification should include:
 
 - JSON/package manifest validation.
-- Static check that commands call `scripts/ide-build.ps1`.
+- Static check that commands call `scripts/commands/ide-build.ps1`.
 - At least one smoke command that runs a lightweight target such as `query-app-deps`, unless local Bazel environment blocks it.
-- Documentation update in `docs/ai-context/ide-bazel-workflow.md`.
+- Documentation update in `docs/ai-context/build-system/ide-bazel-workflow.md`.

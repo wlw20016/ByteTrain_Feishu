@@ -1,4 +1,4 @@
-## Overview
+﻿## Overview
 
 This change closes the documentation and process side of the course requirements. It does not add product UI behavior; it proves that the repository contains the required AI/OpenSpec evidence chain.
 
@@ -31,11 +31,11 @@ Audit these major phase changes:
 
 Update the AI-readable documents that support future assistant work:
 
-- `docs/ai-context/project-structure.md`
-- `docs/ai-context/module-boundaries.md`
-- `docs/ai-context/build-commands.md`
-- `docs/ai-context/common-build-errors.md`
-- `docs/ai-context/ide-bazel-workflow.md`
+- `docs/project/project-structure.md`
+- `docs/project/module-boundaries.md`
+- `docs/ai-context/build-system/build-commands.md`
+- `docs/ai-context/build-system/common-build-errors.md`
+- `docs/ai-context/build-system/ide-bazel-workflow.md`
 - `openspec/prompt.md`
 
 ## Archive Strategy
