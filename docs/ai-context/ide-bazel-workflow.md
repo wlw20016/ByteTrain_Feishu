@@ -149,10 +149,99 @@ powershell -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target rust
 powershell -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target query-app-deps
 ```
 
+## BZL-RUN IDE run 入口
+
+IDE run 入口和 build、test、query 入口一样，统一使用 helper script：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target run-app
+```
+
+该 target 运行：
+
+```powershell
+bazel --batch run --curses=no --show_progress_rate_limit=60 //app:run_app
+```
+
+VS Code task：
+
+- `Bazel: run app`
+
+VS Code helper command：
+
+- 命令 ID：`bytetrain.bazelHelper.runApp`
+- 标题：`Bazel: Run App`
+- Target: `run-app`
+
+Run 前置条件：
+
+- 必须安装 Android SDK Platform-Tools。
+- `ANDROID_HOME` 必须指向 Android SDK，或 `adb.exe` 必须位于 `PATH`。
+- `adb devices` 必须至少显示一个处于 `device` 状态的设备或模拟器。
+
+2026-06-06 验证：
+
+- `scripts/ide-build.ps1 -Target run-app` 在同一输出流中打印 helper banner、工作目录、精确 Bazel 命令、Bazel APK 路径、ADB 路径和 no-device diagnostic lines，随后以 `Bazel Android app run reported a run prerequisite or launch failure.` 失败。
+- 新增 `run-app` task 和 VS Code helper command 后，`scripts/check-ide-003.ps1` 通过。
+
+## IDE-FULL run、debug、indexing 与诊断
+
+决策记录：
+
+- Run path：VS Code/Trae app run 使用 `scripts/ide-build.ps1 -Target run-app`，该入口调用 `bazel --batch run --curses=no --show_progress_rate_limit=60 //app:run_app`。
+- Debug path：当前不宣称支持 VS Code breakpoint。Android Studio fallback 是当前支持的 breakpoint/debug workflow。
+- Debug preparation：VS Code 暴露 `Android Studio: prepare debug`，在 Android Studio 打开或 attach 前调用 `scripts/ide-build.ps1 -Target gradle-app`。
+- 本仓库不提交 `.vscode/launch.json`，因为还没有经过本地验证的 VS Code Android attach/breakpoint 配置。
+
+Indexing 和 code-completion 前置假设：
+
+- `.vscode/extensions.json` 推荐 Kotlin、Rust、Bazel/Starlark、proto、Java 和 Gradle 支持所需 extensions。
+- `.vscode/settings.json` 记录 `BUILD`、`BUILD.bazel`、`MODULE.bazel`、`*.bzl`、`*.bazel` 和 `*.proto` 的稳定文件关联。
+- Rust Analyzer 指向相对项目文件 `sdk/rust/Cargo.toml`。
+- Workspace settings 有意避免 Android SDK、JDK、Cargo 或 Bazel binary 等用户本机绝对路径。
+- Kotlin 和 Android completion 仍依赖本地已安装 tooling 与推荐 extensions。Android Studio 仍是最可靠的 Android-specific indexing 和 breakpoint 工具。
+
+已实现插件能力：
+
+| 命令 ID | 能力 |
+| --- | --- |
+| `bytetrain.bazelHelper.buildApp` | 运行 Bazel app build helper target。 |
+| `bytetrain.bazelHelper.runApp` | 运行 Bazel app run helper target，并暴露设备前置条件失败。 |
+| `bytetrain.bazelHelper.assembleDebug` | 运行 Gradle debug APK build helper target，用于 Android Studio preview/debug preparation。 |
+| `bytetrain.bazelHelper.buildProto` | 运行 proto Bazel build helper target。 |
+| `bytetrain.bazelHelper.buildFeatures` | 运行 shared/feature Kotlin Bazel build helper target。 |
+| `bytetrain.bazelHelper.testRustSdk` | 运行 Rust SDK test helper target。 |
+| `bytetrain.bazelHelper.queryAppDeps` | 运行 app dependency query helper target。 |
+| `bytetrain.bazelHelper.copyDiagnosticContext` | 复制最近一次 helper 命令、工作目录、退出码和最近输出。 |
+| `bytetrain.bazelHelper.openBuildCommands` | 打开 `docs/ai-context/build-commands.md`。 |
+| `bytetrain.bazelHelper.openModuleBoundaries` | 打开 `docs/ai-context/module-boundaries.md`。 |
+| `bytetrain.bazelHelper.openCommonBuildErrors` | 打开 `docs/ai-context/common-build-errors.md`。 |
+
+委托给 IDE-native 的 capabilities：
+
+- 本仓库配置不宣称支持 VS Code breakpoint。
+- Android breakpoints、device selection、Logcat 和深度 Android attach/debug flows 使用 Android Studio fallback。
+- VS Code/Trae 仍作为编辑、运行 helper tasks、阅读 AI context 和复制 diagnostic context 的工作区。
+
+验证：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-ide-004.ps1
+```
+
+2026-06-06 验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-ide-004.ps1` 通过，输出 `IDE-FULL check passed.`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Target query-app-deps` 作为 IDE helper 命令冒烟测试通过。输出包含 `android_binary rule //app:app`、`kt_android_library rule //app:app_lib`、feature targets 和 shared targets。
+- `node --check tools\vscode-bazel-helper\src\extension.js` 通过。
+- 本地未测试 VS Code/Trae breakpoint debug，因为仓库没有提交已验证的 Android attach extension/configuration。Android Studio fallback 仍是支持的 breakpoint workflow。
+
 `.vscode/tasks.json` 暴露同一组入口：
 
 - `Bazel: build app`
+- `Bazel: run app`
 - `Gradle: assemble debug`
+- `Android Studio: prepare debug`
 - `Bazel: build proto`
 - `Bazel: build features`
 - `Rust: test SDK`
@@ -221,14 +310,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ide-build.ps1 -Tar
 
 扩展命令集合与 `.vscode/tasks.json` 的 target 集合保持一致：
 
-| Command ID | IDE 标题 | Target |
+| 命令 ID | IDE 标题 | Target |
 | --- | --- | --- |
 | `bytetrain.bazelHelper.buildApp` | Bazel: Build App | `app` |
+| `bytetrain.bazelHelper.runApp` | Bazel: Run App | `run-app` |
 | `bytetrain.bazelHelper.assembleDebug` | Gradle: Assemble Debug | `gradle-app` |
 | `bytetrain.bazelHelper.buildProto` | Bazel: Build Proto | `proto` |
 | `bytetrain.bazelHelper.buildFeatures` | Bazel: Build Features | `features` |
 | `bytetrain.bazelHelper.testRustSdk` | Rust: Test SDK | `rust` |
 | `bytetrain.bazelHelper.queryAppDeps` | Bazel: Query App Deps | `query-app-deps` |
+| `bytetrain.bazelHelper.copyDiagnosticContext` | Bazel: Copy Diagnostic Context | 工具命令 |
+| `bytetrain.bazelHelper.openBuildCommands` | Bazel: Open Build Commands | 工具命令 |
+| `bytetrain.bazelHelper.openModuleBoundaries` | Bazel: Open Module Boundaries | 工具命令 |
+| `bytetrain.bazelHelper.openCommonBuildErrors` | Bazel: Open Common Build Errors | 工具命令 |
 
 扩展运行时会打开 `ByteTrain Bazel Helper` 输出通道，记录工作目录、实际 PowerShell 命令、stdout/stderr 和 `Exit code`。非零退出码会通过 VS Code 错误提示暴露，详细日志保留在输出通道中。
 

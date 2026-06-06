@@ -62,7 +62,46 @@ The mapping aligns the runtime request/response shape with:
 
 Message fields are mapped one-to-one from SDK DTOs to `MessageItem`, including conversation type, avatar fields, preview timestamp, unread count, pinned/muted state, and bot state.
 
-Mail fields are mapped one-to-one from SDK DTOs to `MailItem`. Rust-only mail pages currently use the documented defaults `attachmentCount = 0`, `mailType = UPDATE`, and `actionText = null`.
+Mail fields are mapped one-to-one from SDK DTOs to `MailItem`. Rust mail pages now include `attachment_count`, `mail_type`, and `action_text` so the Rust domain model matches `proto/mail.proto`.
+
+## Rust async/protobuf SDK boundary
+
+The Rust SDK exposes async page reads while preserving the existing synchronous helpers:
+
+```rust
+pub async fn read_message_page(request: PageRequest) -> SdkResult<MessagePageResponse>;
+pub async fn read_mail_page(request: PageRequest) -> SdkResult<MailPageResponse>;
+```
+
+`MockFeedSdk::read_message_page` and `MockFeedSdk::read_mail_page` use the same deterministic pagination semantics as `get_message_page` and `get_mail_page`: `page_size` must be `1..=200`, `None` or empty cursor requests the first page, and non-empty cursors are zero-based item offsets returned by the previous page.
+
+Rust request/response mapping:
+
+| Proto field | Rust SDK field |
+| --- | --- |
+| `PageRequest.page_size` | `PageRequest.page_size` |
+| `PageRequest.cursor` | `PageRequest.cursor` |
+| `PageInfo.next_cursor` | `Page<T>.next_cursor` |
+| `PageInfo.has_more` | `Page<T>.has_more` |
+| `MessagePageResponse.items` | `MessagePageResponse.items` |
+| `MailPageResponse.items` | `MailPageResponse.items` |
+
+The SDK provides tested protobuf helpers for the current proto3 boundary:
+
+- `encode_page_request` / `decode_page_request`
+- `encode_message_page_response` / `decode_message_page_response`
+- `encode_mail_page_response` / `decode_mail_page_response`
+
+Structured error coverage:
+
+- `InvalidPageSize`
+- `InvalidCursor`
+- `CursorOutOfRange`
+- `ProtobufDecode { target, failure }`
+- `ProtobufEncode { target, failure }`
+- `AsyncRead { operation, reason }`
+
+The current async implementation is local and deterministic; no native Android FFI or real network transport is attached yet. Protobuf support is implemented as SDK-local wire encoding/decoding helpers for the fields used by `proto/paging.proto`, `proto/message.proto`, and `proto/mail.proto`; generated Rust protobuf bindings are still a future integration option.
 
 ## Verification evidence
 
@@ -76,7 +115,7 @@ Focused Kotlin tests:
 Rust SDK tests:
 
 - `cargo test --manifest-path sdk/rust/Cargo.toml`
-- Result recorded in OpenSpec tasks: 8 unit tests passed, doc-tests had 0 tests.
+- Result recorded for `complete-rust-sdk-async-protobuf`: 14 unit tests passed, doc-tests had 0 tests.
 
 Bazel proto/app/SDK evidence:
 

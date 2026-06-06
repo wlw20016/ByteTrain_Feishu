@@ -17,7 +17,37 @@
       "problemMatcher": []
     },
     {
+      "label": "Bazel: run app",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ide-build.ps1",
+        "-Target",
+        "run-app"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
       "label": "Gradle: assemble debug",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ide-build.ps1",
+        "-Target",
+        "gradle-app"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Android Studio: prepare debug",
       "type": "shell",
       "command": "powershell",
       "args": [

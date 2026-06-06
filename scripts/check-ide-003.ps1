@@ -11,6 +11,7 @@ $docPath = Join-Path $root "docs/ai-context/ide-bazel-workflow.md"
 
 $expected = @(
     @{ Id = "bytetrain.bazelHelper.buildApp"; Title = "Bazel: Build App"; Target = "app" },
+    @{ Id = "bytetrain.bazelHelper.runApp"; Title = "Bazel: Run App"; Target = "run-app" },
     @{ Id = "bytetrain.bazelHelper.assembleDebug"; Title = "Gradle: Assemble Debug"; Target = "gradle-app" },
     @{ Id = "bytetrain.bazelHelper.buildProto"; Title = "Bazel: Build Proto"; Target = "proto" },
     @{ Id = "bytetrain.bazelHelper.buildFeatures"; Title = "Bazel: Build Features"; Target = "features" },

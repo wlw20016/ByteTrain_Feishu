@@ -27,7 +27,7 @@
   - 证据：`openspec/prompt.md` 已记录接口草案阶段的 AI 输出摘要、人工决策和最终结果；`openspec/changes/add-sdk-contract/design.md` 已记录 proto 字段拆分、共享分页语义、cursor 透传、Kotlin adapter 边界和错误映射取舍。
 - [x] 可运行时记录 `cargo test` 或 Bazel test 结果。
   - 证据：在 `sdk/rust` 下执行 `cargo test` 通过，输出显示 `running 8 tests`、`8 passed; 0 failed`，并且 doc tests 通过。
-- [ ] 更新飞书多维表格中 SDK/proto 任务的 OpenSpec 证据链接。
+- [x] 更新飞书多维表格中 SDK/proto 任务的 OpenSpec 证据链接。
 
 
 
