@@ -6,7 +6,7 @@ $mainActivityPath = Join-Path $root "app/src/main/kotlin/com/bytetrain/feishuclo
 $messageRepositoryPath = Join-Path $root "features/message/data/MockMessageRepository.kt"
 $mailRepositoryPath = Join-Path $root "features/mail/data/MockMailRepository.kt"
 $evidencePath = Join-Path $root "docs/ai-context/ui/scroll-performance-evidence.md"
-$tasksPath = Join-Path $root "openspec/changes/add-ui-main-flow/tasks.md"
+$tasksPath = Join-Path $root "openspec/changes/fix-load-more-scroll-jump/tasks.md"
 
 $failures = New-Object System.Collections.Generic.List[string]
 
@@ -26,8 +26,9 @@ if (-not (Test-Path $mainActivityPath)) {
 } else {
     $source = Get-Content -Encoding UTF8 -Raw $mainActivityPath
     foreach ($check in @(
-        @{ Name = "MainActivity uses message page size 30"; Pattern = "MESSAGE_PAGE_SIZE\s*=\s*30" },
-        @{ Name = "MainActivity uses mail page size 30"; Pattern = "MAIL_PAGE_SIZE\s*=\s*30" },
+        @{ Name = "MainActivity calculates message page size from visible screen capacity"; Pattern = "messagePageSize\s*\(\s*\)\s*:\s*Int\s*=[\s\S]*screenVisiblePageSize" },
+        @{ Name = "MainActivity calculates mail page size from visible screen capacity"; Pattern = "mailPageSize\s*\(\s*\)\s*:\s*Int\s*=[\s\S]*screenVisiblePageSize" },
+        @{ Name = "MainActivity clamps dynamic page size"; Pattern = "coerceIn\s*\([\s\S]*MIN_VISIBLE_PAGE_SIZE[\s\S]*MAX_REPOSITORY_PAGE_SIZE[\s\S]*\)" },
         @{ Name = "MainActivity labels 10000 conversations"; Pattern = "10000 conversations" },
         @{ Name = "MainActivity labels 10000 emails"; Pattern = "10000 emails" },
         @{ Name = "MainActivity appends message pages"; Pattern = "loadedMessages\s*\+=\s*page\.items" },
@@ -41,7 +42,7 @@ if (-not (Test-Path $evidencePath)) {
     $failures.Add("Scroll performance evidence exists")
 } else {
     $evidence = Get-Content -Encoding UTF8 -Raw $evidencePath
-    foreach ($term in @("10000", "page size 30", "Messages", "Mail", "Load more", "manual acceptance")) {
+    foreach ($term in @("10000", "screen-sized page", "Messages", "Mail", "Pull up to load more", "manual acceptance")) {
         if ($evidence -notmatch [regex]::Escape($term)) {
             $failures.Add("Scroll evidence documents $term")
         }
@@ -49,14 +50,14 @@ if (-not (Test-Path $evidencePath)) {
 }
 
 if (-not (Test-Path $tasksPath)) {
-    $failures.Add("add-ui-main-flow tasks.md exists")
+    $failures.Add("fix-load-more-scroll-jump tasks.md exists")
 } else {
     $tasks = Get-Content -Encoding UTF8 -Raw $tasksPath
-    if ($tasks -notmatch "\[x\]\s+TEST-004") {
-        $failures.Add("TEST-004 is marked complete")
+    if ($tasks -notmatch "\[x\]\s+UI-LOAD-006") {
+        $failures.Add("UI-LOAD-006 is marked complete")
     }
     if ($tasks -notmatch "check-test-004\.ps1") {
-        $failures.Add("TEST-004 records check-test-004.ps1 evidence")
+        $failures.Add("UI-LOAD-006 records check-test-004.ps1 evidence")
     }
 }
 

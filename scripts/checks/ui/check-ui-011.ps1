@@ -39,6 +39,14 @@ foreach ($entry in @(
     if ($entry.Source -notmatch 'Loading more') {
         $failures.Add("$($entry.Name) list renders loading-more footer text")
     }
+
+    if ($entry.Source -notmatch 'ViewTreeObserver\.OnPreDrawListener[\s\S]*scrollTo\s*\(\s*0,\s*initialScrollY\s*\)') {
+        $failures.Add("$($entry.Name) list restores scroll before first draw")
+    }
+
+    if ($entry.Source -match 'scrollView\.post\s*\{[\s\S]*scrollTo\s*\(\s*0,\s*initialScrollY\s*\)') {
+        $failures.Add("$($entry.Name) list does not restore scroll after first draw")
+    }
 }
 
 if ($mainActivity -notmatch 'isLoadingMoreMessages\s*:\s*Boolean') {
@@ -49,16 +57,16 @@ if ($mainActivity -notmatch 'isLoadingMoreMails\s*:\s*Boolean') {
     $failures.Add("MainActivity tracks mail loading-more state")
 }
 
-if ($mainActivity -notmatch 'messageListScrollY\s*=\s*scrollY[\s\S]*isLoadingMoreMessages\s*=\s*true') {
-    $failures.Add("Message load-more stores current scroll before rendering loading state")
+if ($mainActivity -notmatch 'messageListScrollY\s*=\s*scrollY[\s\S]*isLoadingMoreMessages\s*=\s*true[\s\S]*loadNextMessagePage\s*\(\s*\)[\s\S]*isLoadingMoreMessages\s*=\s*false[\s\S]*renderMessageList\s*\(\s*\)') {
+    $failures.Add("Message load-more stores current scroll and rerenders after appending")
 }
 
-if ($mainActivity -notmatch 'mailListScrollY\s*=\s*scrollY[\s\S]*isLoadingMoreMails\s*=\s*true') {
-    $failures.Add("Mail load-more stores current scroll before rendering loading state")
+if ($mainActivity -notmatch 'mailListScrollY\s*=\s*scrollY[\s\S]*isLoadingMoreMails\s*=\s*true[\s\S]*loadNextMailPage\s*\(\s*\)[\s\S]*isLoadingMoreMails\s*=\s*false[\s\S]*renderMailList\s*\(\s*\)') {
+    $failures.Add("Mail load-more stores current scroll and rerenders after appending")
 }
 
-if ($mainActivity -notmatch 'contentContainer\.post') {
-    $failures.Add("MainActivity defers page append after loading state render")
+if ($mainActivity -match 'contentContainer\.post') {
+    $failures.Add("MainActivity does not defer page append behind an intermediate loading rerender")
 }
 
 if ($failures.Count -gt 0) {

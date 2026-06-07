@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -52,11 +53,21 @@ fun createMailListScreen(
         }
     }
 
-    scrollView.post {
-        scrollView.scrollTo(0, initialScrollY)
-    }
+    scrollView.restoreScrollBeforeDraw(initialScrollY)
 
     return scrollView
+}
+
+private fun ScrollView.restoreScrollBeforeDraw(initialScrollY: Int) {
+    viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
+        override fun onPreDraw(): Boolean {
+            if (viewTreeObserver.isAlive) {
+                viewTreeObserver.removeOnPreDrawListener(this)
+            }
+            scrollTo(0, initialScrollY)
+            return true
+        }
+    })
 }
 
 private fun createHeader(

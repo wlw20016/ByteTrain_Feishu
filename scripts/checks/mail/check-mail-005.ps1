@@ -30,11 +30,11 @@ if (-not (Test-Path $mainActivityPath)) {
         },
         @{
             Name = "MainActivity loads initial mail page"
-            Pattern = "mailRepository\.loadPage\s*\(\s*MAIL_PAGE_SIZE\s*,\s*null\s*\)"
+            Pattern = "mailRepository\.loadPage\s*\(\s*mailPageSize\s*\(\s*\)\s*,\s*null\s*\)"
         },
         @{
             Name = "MainActivity loads next mail page with cursor"
-            Pattern = "mailRepository\.loadPage\s*\(\s*MAIL_PAGE_SIZE\s*,\s*nextMailCursor\s*\)"
+            Pattern = "mailRepository\.loadPage\s*\(\s*mailPageSize\s*\(\s*\)\s*,\s*nextMailCursor\s*\)"
         },
         @{
             Name = "MainActivity appends loaded mail items"
@@ -49,7 +49,7 @@ if (-not (Test-Path $mainActivityPath)) {
             Pattern = "hasMoreMails\s*=\s*page\.hasMore"
         },
         @{
-            Name = "MainActivity rerenders mail list after loading more"
+            Name = "MainActivity rerenders mail list once after appending next page"
             Pattern = "onLoadMore\s*=\s*\{\s*scrollY\s*->[\s\S]*mailListScrollY\s*=\s*scrollY[\s\S]*isLoadingMoreMails\s*=\s*true[\s\S]*loadNextMailPage\s*\(\s*\)[\s\S]*isLoadingMoreMails\s*=\s*false[\s\S]*renderMailList\s*\(\s*\)"
         },
         @{
@@ -100,6 +100,10 @@ if (-not (Test-Path $screenPath)) {
         @{
             Name = "Mail list renders no more state"
             Pattern = "No more mail"
+        },
+        @{
+            Name = "Mail list restores scroll before first draw"
+            Pattern = "ViewTreeObserver\.OnPreDrawListener[\s\S]*scrollTo\s*\(\s*0,\s*initialScrollY\s*\)"
         }
     )
 
@@ -112,6 +116,22 @@ if (-not (Test-Path $screenPath)) {
 
 if ($screen -match '"Load more"') {
     $failures.Add("Mail list no longer renders Load more button")
+}
+
+if ($mainActivity -notmatch "private\s+fun\s+mailPageSize\s*\(\s*\)\s*:\s*Int\s*=[\s\S]*screenVisiblePageSize") {
+    $failures.Add("Mail page size is calculated from visible screen capacity")
+}
+
+if ($mainActivity -match "MAIL_PAGE_SIZE\s*=\s*30") {
+    $failures.Add("Mail page size is no longer fixed at 30")
+}
+
+if ($mainActivity -match "isLoadingMoreMails\s*=\s*true\s*[\r\n\s]*renderMailList\s*\(\s*\)\s*[\r\n\s]*contentContainer\.post") {
+    $failures.Add("Mail load-more does not rerender a top-positioned list before appending")
+}
+
+if ($screen -match "scrollView\.post\s*\{[\s\S]*scrollTo\s*\(\s*0,\s*initialScrollY\s*\)") {
+    $failures.Add("Mail list does not restore scroll with post after first draw")
 }
 
 if ($failures.Count -gt 0) {
