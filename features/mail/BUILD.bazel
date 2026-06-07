@@ -10,6 +10,7 @@ MAIL_DOMAIN_SRCS = [
 
 MAIL_DATA_SRCS = [
     "data/MockMailRepository.kt",
+    "data/NativeProtobufMailSdkClient.kt",
     "data/RuntimeMailSdkClient.kt",
     "data/SdkMailRepository.kt",
 ]
@@ -31,7 +32,10 @@ kt_jvm_library(
 kt_jvm_library(
     name = "data",
     srcs = MAIL_DATA_SRCS,
-    deps = [":domain"],
+    deps = [
+        ":domain",
+        "//shared/sdk:sdk_bridge",
+    ],
 )
 
 kt_jvm_library(

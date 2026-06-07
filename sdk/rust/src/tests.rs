@@ -305,3 +305,105 @@ fn protobuf_decode_failure_returns_structured_error() {
         }
     );
 }
+
+#[test]
+fn bridge_message_bytes_returns_first_and_next_pages() {
+    let first_request = encode_page_request(&PageRequest {
+        page_size: 20,
+        cursor: None,
+    })
+    .expect("encode first request");
+    let first = decode_message_page_response(
+        &read_message_page_response_bytes(&first_request).expect("bridge first page"),
+    )
+    .expect("decode first bridge response");
+
+    let next_request = encode_page_request(&PageRequest {
+        page_size: 20,
+        cursor: first.next_cursor.clone(),
+    })
+    .expect("encode next request");
+    let next = decode_message_page_response(
+        &read_message_page_response_bytes(&next_request).expect("bridge next page"),
+    )
+    .expect("decode next bridge response");
+
+    assert_eq!(first.items.len(), 20);
+    assert_eq!(first.items.first().map(|item| item.id.as_str()), Some("message-1"));
+    assert_eq!(first.next_cursor.as_deref(), Some("20"));
+    assert!(first.has_more);
+    assert_eq!(next.items.first().map(|item| item.id.as_str()), Some("message-21"));
+    assert_eq!(next.next_cursor.as_deref(), Some("40"));
+}
+
+#[test]
+fn bridge_mail_bytes_returns_first_and_next_pages() {
+    let first_request = encode_page_request(&PageRequest {
+        page_size: 15,
+        cursor: None,
+    })
+    .expect("encode first request");
+    let first =
+        decode_mail_page_response(&read_mail_page_response_bytes(&first_request).expect("bridge first page"))
+            .expect("decode first bridge response");
+
+    let next_request = encode_page_request(&PageRequest {
+        page_size: 15,
+        cursor: first.next_cursor.clone(),
+    })
+    .expect("encode next request");
+    let next =
+        decode_mail_page_response(&read_mail_page_response_bytes(&next_request).expect("bridge next page"))
+            .expect("decode next bridge response");
+
+    assert_eq!(first.items.len(), 15);
+    assert_eq!(first.items.first().map(|item| item.id.as_str()), Some("mail-1"));
+    assert_eq!(first.next_cursor.as_deref(), Some("15"));
+    assert!(first.has_more);
+    assert_eq!(next.items.first().map(|item| item.id.as_str()), Some("mail-16"));
+    assert_eq!(next.next_cursor.as_deref(), Some("30"));
+}
+
+#[test]
+fn bridge_bytes_errors_are_structured() {
+    let invalid_page_size = encode_page_request(&PageRequest {
+        page_size: 0,
+        cursor: None,
+    })
+    .expect("encode invalid page size");
+    let invalid_cursor = encode_page_request(&PageRequest {
+        page_size: 20,
+        cursor: Some("bad".to_owned()),
+    })
+    .expect("encode invalid cursor");
+    let out_of_range = encode_page_request(&PageRequest {
+        page_size: 20,
+        cursor: Some("10001".to_owned()),
+    })
+    .expect("encode out-of-range cursor");
+
+    assert_eq!(
+        read_message_page_response_bytes(&invalid_page_size)
+            .expect_err("invalid page size")
+            .code,
+        BridgeErrorCode::InvalidPageSize
+    );
+    assert_eq!(
+        read_message_page_response_bytes(&invalid_cursor)
+            .expect_err("invalid cursor")
+            .code,
+        BridgeErrorCode::InvalidCursor
+    );
+    assert_eq!(
+        read_mail_page_response_bytes(&out_of_range)
+            .expect_err("out-of-range cursor")
+            .code,
+        BridgeErrorCode::CursorOutOfRange
+    );
+    assert_eq!(
+        read_mail_page_response_bytes(&[0x08, 0x80])
+            .expect_err("malformed protobuf")
+            .code,
+        BridgeErrorCode::ProtobufDecode
+    );
+}
