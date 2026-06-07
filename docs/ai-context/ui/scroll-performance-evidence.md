@@ -17,12 +17,12 @@ Both list data sources expose 10000 deterministic records:
 
 ## Paging behavior
 
-The app does not render all 10000 records at once. `MainActivity` uses page size 30 for both tabs:
+The app does not render all 10000 records at once. `MainActivity` uses a screen-sized page for both tabs:
 
-- Messages: page size 30
-- Mail: page size 30
+- Messages: visible message rows plus a small preload buffer.
+- Mail: visible mail cards plus a small preload buffer.
 
-Each list appends the next page only after the user chooses `Load more`.
+Each list appends the next screen-sized page automatically after the user scrolls near the `Pull up to load more` footer.
 
 ## Manual acceptance
 
@@ -30,11 +30,11 @@ Manual acceptance checklist for 10000-record scrolling:
 
 | Area | Expected result |
 | --- | --- |
-| Messages | First page renders quickly with 30 conversations. |
-| Messages | `Load more` appends another page without replacing existing rows. |
+| Messages | First page renders quickly with a screen-sized page of conversations. |
+| Messages | Scrolling near the bottom appends another screen-sized page without replacing existing rows. |
 | Messages | Header reports `Showing {items.size} of 10000 mock conversations`. |
-| Mail | First page renders quickly with 30 email cards. |
-| Mail | `Load more` appends another page without replacing existing cards. |
+| Mail | First page renders quickly with a screen-sized page of email cards. |
+| Mail | Scrolling near the bottom appends another screen-sized page without replacing existing cards. |
 | Mail | Header reports `Showing {items.size} of 10000 mock emails`. |
 
 The current first-stage UI uses simple Android `ScrollView` screens and page-based appends. This is acceptable for the staged mock UI because only loaded pages are rendered, while a future production UI can migrate to recycler-style rendering when needed.

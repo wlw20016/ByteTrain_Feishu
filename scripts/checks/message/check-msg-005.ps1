@@ -26,7 +26,7 @@ if (-not (Test-Path $mainActivityPath)) {
         },
         @{
             Name = "MainActivity loads next page with cursor"
-            Pattern = "messageRepository\.loadPage\s*\(\s*MESSAGE_PAGE_SIZE\s*,\s*nextMessageCursor\s*\)"
+            Pattern = "messageRepository\.loadPage\s*\(\s*messagePageSize\s*\(\s*\)\s*,\s*nextMessageCursor\s*\)"
         },
         @{
             Name = "MainActivity appends loaded items"
@@ -41,7 +41,7 @@ if (-not (Test-Path $mainActivityPath)) {
             Pattern = "hasMoreMessages\s*=\s*page\.hasMore"
         },
         @{
-            Name = "MainActivity rerenders after loading more"
+            Name = "MainActivity rerenders message list once after appending next page"
             Pattern = "onLoadMore\s*=\s*\{\s*scrollY\s*->[\s\S]*messageListScrollY\s*=\s*scrollY[\s\S]*isLoadingMoreMessages\s*=\s*true[\s\S]*loadNextMessagePage\s*\(\s*\)[\s\S]*isLoadingMoreMessages\s*=\s*false[\s\S]*renderMessageList\s*\(\s*\)"
         }
     )
@@ -81,6 +81,10 @@ if (-not (Test-Path $screenPath)) {
         @{
             Name = "Message list renders no more state"
             Pattern = "No more messages"
+        },
+        @{
+            Name = "Message list restores scroll before first draw"
+            Pattern = "ViewTreeObserver\.OnPreDrawListener[\s\S]*scrollTo\s*\(\s*0,\s*initialScrollY\s*\)"
         }
     )
 
@@ -93,6 +97,22 @@ if (-not (Test-Path $screenPath)) {
 
 if ($screen -match '"Load more"') {
     $failures.Add("Message list no longer renders Load more button")
+}
+
+if ($mainActivity -notmatch "private\s+fun\s+messagePageSize\s*\(\s*\)\s*:\s*Int\s*=[\s\S]*screenVisiblePageSize") {
+    $failures.Add("Message page size is calculated from visible screen capacity")
+}
+
+if ($mainActivity -match "MESSAGE_PAGE_SIZE\s*=\s*30") {
+    $failures.Add("Message page size is no longer fixed at 30")
+}
+
+if ($mainActivity -match "isLoadingMoreMessages\s*=\s*true\s*[\r\n\s]*renderMessageList\s*\(\s*\)\s*[\r\n\s]*contentContainer\.post") {
+    $failures.Add("Message load-more does not rerender a top-positioned list before appending")
+}
+
+if ($screen -match "scrollView\.post\s*\{[\s\S]*scrollTo\s*\(\s*0,\s*initialScrollY\s*\)") {
+    $failures.Add("Message list does not restore scroll with post after first draw")
 }
 
 if ($failures.Count -gt 0) {

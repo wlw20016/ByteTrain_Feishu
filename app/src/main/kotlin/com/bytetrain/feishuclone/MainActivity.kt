@@ -250,7 +250,7 @@ class MainActivity : Activity() {
 
     private fun loadInitialMessagePage() {
         val page = runSuspendBlocking {
-            messageRepository.loadPage(MESSAGE_PAGE_SIZE, null)
+            messageRepository.loadPage(messagePageSize(), null)
         }
         loadedMessages += page.items
         nextMessageCursor = page.nextCursor
@@ -263,7 +263,7 @@ class MainActivity : Activity() {
         }
 
         val page = runSuspendBlocking {
-            messageRepository.loadPage(MESSAGE_PAGE_SIZE, nextMessageCursor)
+            messageRepository.loadPage(messagePageSize(), nextMessageCursor)
         }
         loadedMessages += page.items
         nextMessageCursor = page.nextCursor
@@ -291,12 +291,9 @@ class MainActivity : Activity() {
                 }
                 messageListScrollY = scrollY
                 isLoadingMoreMessages = true
+                loadNextMessagePage()
+                isLoadingMoreMessages = false
                 renderMessageList()
-                contentContainer.post {
-                    loadNextMessagePage()
-                    isLoadingMoreMessages = false
-                    renderMessageList()
-                }
             },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -340,12 +337,9 @@ class MainActivity : Activity() {
                 }
                 mailListScrollY = scrollY
                 isLoadingMoreMails = true
+                loadNextMailPage()
+                isLoadingMoreMails = false
                 renderMailList()
-                contentContainer.post {
-                    loadNextMailPage()
-                    isLoadingMoreMails = false
-                    renderMailList()
-                }
             },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -378,7 +372,7 @@ class MainActivity : Activity() {
 
     private fun loadInitialMailPage() {
         val page = runSuspendBlocking {
-            mailRepository.loadPage(MAIL_PAGE_SIZE, null)
+            mailRepository.loadPage(mailPageSize(), null)
         }
         loadedMails += page.items
         nextMailCursor = page.nextCursor
@@ -391,16 +385,45 @@ class MainActivity : Activity() {
         }
 
         val page = runSuspendBlocking {
-            mailRepository.loadPage(MAIL_PAGE_SIZE, nextMailCursor)
+            mailRepository.loadPage(mailPageSize(), nextMailCursor)
         }
         loadedMails += page.items
         nextMailCursor = page.nextCursor
         hasMoreMails = page.hasMore
     }
 
+    private fun messagePageSize(): Int =
+        screenVisiblePageSize(MESSAGE_ROW_HEIGHT_DP)
+
+    private fun mailPageSize(): Int =
+        screenVisiblePageSize(MAIL_CARD_HEIGHT_DP)
+
+    private fun screenVisiblePageSize(estimatedItemHeightDp: Int): Int {
+        val density = resources.displayMetrics.density
+        val estimatedItemHeightPixels = dp(density, estimatedItemHeightDp).coerceAtLeast(1)
+        val availableHeightPixels = if (::contentContainer.isInitialized && contentContainer.height > 0) {
+            contentContainer.height
+        } else {
+            resources.displayMetrics.heightPixels - dp(density, FALLBACK_VERTICAL_CHROME_DP)
+        }.coerceAtLeast(estimatedItemHeightPixels)
+
+        val visibleItemCount = kotlin.math.ceil(
+            availableHeightPixels.toDouble() / estimatedItemHeightPixels.toDouble(),
+        ).toInt()
+
+        return (visibleItemCount + PAGE_PRELOAD_ITEMS).coerceIn(
+            MIN_VISIBLE_PAGE_SIZE,
+            MAX_REPOSITORY_PAGE_SIZE,
+        )
+    }
+
     companion object {
-        private const val MESSAGE_PAGE_SIZE = 30
-        private const val MAIL_PAGE_SIZE = 30
+        private const val MESSAGE_ROW_HEIGHT_DP = 64
+        private const val MAIL_CARD_HEIGHT_DP = 92
+        private const val PAGE_PRELOAD_ITEMS = 2
+        private const val MIN_VISIBLE_PAGE_SIZE = 1
+        private const val MAX_REPOSITORY_PAGE_SIZE = 200
+        private const val FALLBACK_VERTICAL_CHROME_DP = 112
         private const val SELECTED_TAB_COLOR = 0xFF2F80ED.toInt()
         private const val UNSELECTED_TAB_COLOR = 0xFF8A94A6.toInt()
         private const val SELECTED_TAB_BACKGROUND_COLOR = 0xFFEAF2FF.toInt()

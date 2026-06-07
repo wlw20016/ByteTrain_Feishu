@@ -68,8 +68,8 @@ if (-not (Test-Path $mainActivityPath)) {
             Pattern = "import\s+com\.bytetrain\.feishuclone\.features\.message\.ui\.createMessageListScreen"
         },
         @{
-            Name = "MainActivity loads first message page"
-            Pattern = "messageRepository\.loadPage\s*\(\s*MESSAGE_PAGE_SIZE\s*,\s*null\s*\)"
+            Name = "MainActivity loads first message page with screen-sized page size"
+            Pattern = "messageRepository\.loadPage\s*\(\s*messagePageSize\s*\(\s*\)\s*,\s*null\s*\)"
         },
         @{
             Name = "MainActivity maps messages to unified UI"
