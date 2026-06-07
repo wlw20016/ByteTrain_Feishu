@@ -1,3 +1,4 @@
+mod bridge;
 mod async_api;
 mod error;
 mod mock_data;
@@ -5,6 +6,10 @@ mod models;
 mod paging;
 mod protobuf;
 
+pub use bridge::{
+    read_mail_page_response_bytes, read_message_page_response_bytes, BridgeError,
+    BridgeErrorCode, BridgeResult,
+};
 pub use async_api::{
     get_mail_page, get_message_page, read_mail_page, read_message_page, MockFeedSdk,
 };

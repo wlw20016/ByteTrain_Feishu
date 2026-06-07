@@ -1,147 +1,124 @@
 # SDK adapter evidence
 
-This document records the final `connect-sdk-protobuf-runtime` adapter path after the UI was switched from direct mock repositories to SDK-backed repository construction with mock fallback.
+This document records the current production SDK-backed adapter path after
+`complete-native-rust-protobuf-ui-bridge`.
 
 ## Runtime path
 
-The app runtime now constructs message and mail repositories through `AppRepositoryProvider`:
+The app runtime constructs message and mail repositories through
+`AppRepositoryProvider`:
 
 ```text
 MainActivity
   -> AppRepositoryProvider()
-  -> SdkMessageRepository(RuntimeMessageSdkClient(), MockMessageRepository())
-  -> SdkMailRepository(RuntimeMailSdkClient(), MockMailRepository())
-  -> UI-facing MessageRepository / MailRepository interfaces
+  -> SdkMessageRepository(NativeProtobufMessageSdkClient(), MockMessageRepository())
+  -> SdkMailRepository(NativeProtobufMailSdkClient(), MockMailRepository())
+  -> NativeRustFeedBridgeClient
+  -> NativeRustFeedBridge
+  -> JNI bytes bridge
+  -> Rust SDK bridge
+  -> Rust SDK pagination/protobuf helpers
 ```
 
-`MainActivity` keeps depending on `MessageRepository` and `MailRepository` behavior through `loadPage(pageSize, cursor)`. UI screens do not import SDK DTOs, protobuf DTOs, Rust SDK types, or runtime bridge implementation details.
+UI screens still depend only on `MessageRepository` and `MailRepository`.
+They do not import SDK DTOs, protobuf DTOs, JNI APIs, or Rust types.
 
-## Repository provider
+## Production client boundary
 
-`AppRepositoryProvider` is the app composition root for data repositories.
+Production message and mail clients are:
 
-- Default behavior keeps `sdkRuntimeEnabled = true`.
-- `SdkMessageRepository` and `SdkMailRepository` are the repository adapter boundary between UI-facing repositories and SDK clients.
-- Message construction returns `SdkMessageRepository(RuntimeMessageSdkClient(), fallback)`.
-- Mail construction returns `SdkMailRepository(RuntimeMailSdkClient(), fallback)`.
-- The fallback path is always constructed from `MockMessageRepository` / `MockMailRepository`.
-- If SDK runtime construction fails, the provider returns the mock fallback repository.
-- If SDK loading fails after construction, `SdkMessageRepository` / `SdkMailRepository` delegate the original `pageSize` and `cursor` request to the configured fallback repository.
+- `features/message/data/NativeProtobufMessageSdkClient.kt`
+- `features/mail/data/NativeProtobufMailSdkClient.kt`
 
-## SDK client boundary
+Both clients use `NativeRustFeedBridgeClient` to encode `PageRequest` bytes,
+call the native Rust bridge, decode `MessagePageResponse` or
+`MailPageResponse` bytes, and map SDK DTO fields/enums back to repository
+domain models.
 
-The runtime bridge remains behind explicit SDK client interfaces:
+`shared/sdk/NativeRustFeedBridge.kt` owns `System.loadLibrary("bytetrain_feed_sdk")`
+and the JNI calls. Native bridge responses use a small envelope:
 
-- `MessageSdkClient.getMessagePage(pageSize, cursor)`
-- `MailSdkClient.getMailPage(pageSize, cursor)`
+- tag `0`: success, followed by protobuf response bytes
+- tag `1`: failure, followed by structured error code and UTF-8 message
 
-The current concrete clients are:
+`SdkBridgeException` carries `BridgeErrorCode` so repository fallback can handle
+native bridge, protobuf, cursor, page-size, or SDK read failures.
 
-- `RuntimeMessageSdkClient`
-- `RuntimeMailSdkClient`
+## Fallback and runtime fake boundary
 
-These clients provide deterministic local runtime data with the same pagination semantics as the Rust SDK:
+`AppRepositoryProvider` now defaults to native protobuf clients. Mock fallback
+repositories remain configured so UI flows survive native construction or load
+failures.
 
-- `pageSize` must be in `1..200`.
-- `cursor == null` or `cursor == ""` requests the first page.
-- Non-empty cursors are parsed as zero-based start indexes.
-- Invalid cursors, out-of-range cursors, and invalid page sizes fail the bridge request so the repository fallback strategy can run.
-- `nextCursor` is set only when `hasMore == true`; otherwise it is `null`.
+`RuntimeMessageSdkClient` and `RuntimeMailSdkClient` remain useful deterministic
+Kotlin fakes, but they are not production Rust protobuf bridge evidence. They
+are reachable only through explicit test injection or
+`AppRepositoryProvider.withRuntimeFakeFallback()`.
 
-## Protobuf-shaped contract
+## Rust bridge boundary
 
-Generated Kotlin protobuf bindings are still not part of this runtime path. Instead, the runtime bridge uses the protobuf-shaped mapping documented in `openspec/changes/connect-sdk-protobuf-runtime/design.md`.
-
-The mapping aligns the runtime request/response shape with:
-
-- `PageRequest.page_size`
-- `PageRequest.cursor`
-- `PageInfo.next_cursor`
-- `PageInfo.has_more`
-- `MessagePageResponse.items`
-- `MailPageResponse.items`
-
-Message fields are mapped one-to-one from SDK DTOs to `MessageItem`, including conversation type, avatar fields, preview timestamp, unread count, pinned/muted state, and bot state.
-
-Mail fields are mapped one-to-one from SDK DTOs to `MailItem`. Rust mail pages now include `attachment_count`, `mail_type`, and `action_text` so the Rust domain model matches `proto/mail.proto`.
-
-## Rust async/protobuf SDK boundary
-
-The Rust SDK exposes async page reads while preserving the existing synchronous helpers:
+Rust bridge APIs in `sdk/rust/src/bridge.rs` accept `PageRequest` bytes and
+return response bytes:
 
 ```rust
-pub async fn read_message_page(request: PageRequest) -> SdkResult<MessagePageResponse>;
-pub async fn read_mail_page(request: PageRequest) -> SdkResult<MailPageResponse>;
+read_message_page_response_bytes(request_bytes: &[u8]) -> BridgeResult<Vec<u8>>
+read_mail_page_response_bytes(request_bytes: &[u8]) -> BridgeResult<Vec<u8>>
 ```
 
-`MockFeedSdk::read_message_page` and `MockFeedSdk::read_mail_page` use the same deterministic pagination semantics as `get_message_page` and `get_mail_page`: `page_size` must be `1..=200`, `None` or empty cursor requests the first page, and non-empty cursors are zero-based item offsets returned by the previous page.
+The bridge decodes requests through Rust SDK protobuf helpers, reads pages
+through `MockFeedSdk`, encodes responses through Rust SDK protobuf helpers, and
+maps SDK errors to structured `BridgeErrorCode` values.
 
-Rust request/response mapping:
+JNI exports:
 
-| Proto field | Rust SDK field |
-| --- | --- |
-| `PageRequest.page_size` | `PageRequest.page_size` |
-| `PageRequest.cursor` | `PageRequest.cursor` |
-| `PageInfo.next_cursor` | `Page<T>.next_cursor` |
-| `PageInfo.has_more` | `Page<T>.has_more` |
-| `MessagePageResponse.items` | `MessagePageResponse.items` |
-| `MailPageResponse.items` | `MailPageResponse.items` |
+```text
+Java_com_bytetrain_feishuclone_sdk_NativeRustFeedBridge_readMessagePageNative
+Java_com_bytetrain_feishuclone_sdk_NativeRustFeedBridge_readMailPageNative
+```
 
-The SDK provides tested protobuf helpers for the current proto3 boundary:
+## Native packaging
 
-- `encode_page_request` / `decode_page_request`
-- `encode_message_page_response` / `decode_message_page_response`
-- `encode_mail_page_response` / `decode_mail_page_response`
+`app/build.gradle.kts` builds Rust Android `cdylib` artifacts for:
 
-Structured error coverage:
+- `arm64-v8a`
+- `armeabi-v7a`
+- `x86`
+- `x86_64`
 
-- `InvalidPageSize`
-- `InvalidCursor`
-- `CursorOutOfRange`
-- `ProtobufDecode { target, failure }`
-- `ProtobufEncode { target, failure }`
-- `AsyncRead { operation, reason }`
+The generated `.so` files are copied into `app/build/rustJniLibs` and included
+as app `jniLibs`.
 
-The current async implementation is local and deterministic; no native Android FFI or real network transport is attached yet. Protobuf support is implemented as SDK-local wire encoding/decoding helpers for the fields used by `proto/paging.proto`, `proto/message.proto`, and `proto/mail.proto`; generated Rust protobuf bindings are still a future integration option.
+APK inspection after `.\gradlew.bat assembleDebug`:
+
+```text
+lib/arm64-v8a/libbytetrain_feed_sdk.so
+lib/armeabi-v7a/libbytetrain_feed_sdk.so
+lib/x86/libbytetrain_feed_sdk.so
+lib/x86_64/libbytetrain_feed_sdk.so
+```
 
 ## Verification evidence
 
-Focused Kotlin tests:
+Verified on 2026-06-08:
 
-- `.\gradlew.bat :app:testDebugUnitTest`
-- Message suite: first page, next page, invalid cursor fallback, and key field mapping.
-- Mail suite: first page, next page, invalid cursor fallback, and key field mapping.
-- Result recorded in OpenSpec tasks: 6 focused SDK-backed repository tests passed.
+```powershell
+cargo test --manifest-path sdk/rust/Cargo.toml
+bazel.cmd --batch test //sdk/rust:bytetrain_feed_sdk_test
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat assembleDebug
+jar tf app\build\outputs\apk\debug\app-debug.apk | Select-String -Pattern "libbytetrain_feed_sdk"
+```
 
-Rust SDK tests:
+Results:
 
-- `cargo test --manifest-path sdk/rust/Cargo.toml`
-- Result recorded for `complete-rust-sdk-async-protobuf`: 14 unit tests passed, doc-tests had 0 tests.
+- Rust cargo tests: 17 passed, 0 failed.
+- Bazel Rust test: `//sdk/rust:bytetrain_feed_sdk_test` passed.
+- Android unit tests: `BUILD SUCCESSFUL`.
+- Android debug APK: `BUILD SUCCESSFUL`.
+- APK contains all four ABI copies of `libbytetrain_feed_sdk.so`.
 
-Bazel proto/app/SDK evidence:
+## Remaining boundary
 
-- `bazel.exe --batch build //proto:feed_proto //proto:paging_proto //proto:message_proto //proto:mail_proto --verbose_failures`
-- `bazel.exe --batch test //sdk/rust:bytetrain_feed_sdk_test --verbose_failures --test_output=errors`
-- `bazel.exe --batch build //features/message:data //features/mail:data --verbose_failures`
-- `bazel.exe --batch build //app:app_lib --verbose_failures`
-- `bazel.exe --batch build //app:app --verbose_failures --jobs=1 --local_cpu_resources=1`
-
-The app binary retry produced:
-
-- `bazel-bin/app/app_deploy.jar`
-- `bazel-bin/app/app_unsigned.apk`
-- `bazel-bin/app/app.apk`
-
-Bazel query confirmed the repository currently has one test rule:
-
-- `//sdk/rust:bytetrain_feed_sdk_test`
-
-## Remaining limitations
-
-- The Android runtime bridge is not native Rust FFI. It is a Kotlin runtime implementation that preserves Rust SDK pagination semantics behind the SDK client interfaces.
-- Generated Kotlin protobuf bindings are not wired into the runtime path yet. The protobuf contract is validated through proto BUILD targets and documented shape mapping.
-- `RuntimeMessageSdkClient` and `RuntimeMailSdkClient` use deterministic local data for this project phase; real transport can be attached behind `MessageSdkClient` and `MailSdkClient` without changing UI code.
-- Mock fallback remains intentionally enabled to preserve UI availability while native SDK/protobuf transport is incomplete.
-- Bazel on this Windows environment needs the local Bazel binary path from the existing Bazelisk cache because plain `bazelisk` attempts to resolve `latest` over the network when `.bazelversion` is absent.
-- Full `//app:app` Bazel build may require low concurrency on this machine. The successful retry used `--jobs=1 --local_cpu_resources=1` after the default attempt hit a Windows page-file/native-memory allocation failure in Android resource linking.
-- Bazel output still includes non-blocking warnings from the non-ASCII host name Java log handler, MSVC code page warnings, and deprecated `--local_cpu_resources`.
+This change verifies build-time packaging and JVM-level repository/native-client
+behavior. It does not include a device or emulator smoke test that launches the
+APK and calls `System.loadLibrary` on Android runtime hardware.
