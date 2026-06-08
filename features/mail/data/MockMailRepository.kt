@@ -66,11 +66,11 @@ class MockMailRepository(
     private fun actionTextFor(index: Int, mailType: MailType): String? =
         when {
             index % 4 != 0 -> null
-            mailType == MailType.REMINDER -> "Confirm"
-            mailType == MailType.REPORT -> "Open report"
-            mailType == MailType.SYSTEM -> "View build"
-            mailType == MailType.COLLABORATION -> "Review"
-            else -> "Read"
+            mailType == MailType.REMINDER -> "确认"
+            mailType == MailType.REPORT -> "查看报告"
+            mailType == MailType.SYSTEM -> "查看构建"
+            mailType == MailType.COLLABORATION -> "评审"
+            else -> "阅读"
         }
 
     companion object {

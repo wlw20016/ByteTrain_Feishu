@@ -5,6 +5,8 @@ import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
@@ -23,9 +25,11 @@ import com.bytetrain.feishuclone.features.message.domain.MessageItem
 import com.bytetrain.feishuclone.features.message.mapper.toUnifiedListItem
 import com.bytetrain.feishuclone.features.message.ui.createMessageDetailScreen
 import com.bytetrain.feishuclone.features.message.ui.createMessageListScreen
+import com.bytetrain.feishuclone.shared.list.PagingUiState
 import com.bytetrain.feishuclone.shared.navigation.AppRoutes
 import com.bytetrain.feishuclone.shared.ui.UnifiedListItem
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine
@@ -34,6 +38,10 @@ class MainActivity : Activity() {
     private lateinit var contentContainer: LinearLayout
     private lateinit var messageTab: LinearLayout
     private lateinit var mailTab: LinearLayout
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val pageLoadExecutor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "bytetrain-page-loader").apply { isDaemon = true }
+    }
     private var currentRoute: String = AppRoutes.MESSAGE_LIST
     private var selectedMessageItem: UnifiedListItem? = null
     private var selectedMailItem: UnifiedListItem? = null
@@ -48,8 +56,13 @@ class MainActivity : Activity() {
     private var hasMoreMails: Boolean = true
     private var messageListScrollY: Int = 0
     private var mailListScrollY: Int = 0
+    private var messagePagingState: PagingUiState<MessageItem> = PagingUiState.Loading
+    private var mailPagingState: PagingUiState<MailItem> = PagingUiState.Loading
+    private var isLoadingInitialMessages: Boolean = false
+    private var isLoadingInitialMails: Boolean = false
     private var isLoadingMoreMessages: Boolean = false
     private var isLoadingMoreMails: Boolean = false
+    private var isActivityDestroyed: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +71,13 @@ class MainActivity : Activity() {
         setContentView(createRootView())
         registerSystemBackCallback()
         renderSelectedRoute()
+    }
+
+    override fun onDestroy() {
+        isActivityDestroyed = true
+        mainHandler.removeCallbacksAndMessages(null)
+        pageLoadExecutor.shutdownNow()
+        super.onDestroy()
     }
 
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
@@ -241,7 +261,10 @@ class MainActivity : Activity() {
     }
 
     private fun ensureInitialMessagesLoaded() {
-        if (loadedMessages.isNotEmpty() || !hasMoreMessages) {
+        if (loadedMessages.isNotEmpty() || isLoadingInitialMessages || !hasMoreMessages) {
+            return
+        }
+        if (messagePagingState is PagingUiState.Error) {
             return
         }
 
@@ -249,36 +272,74 @@ class MainActivity : Activity() {
     }
 
     private fun loadInitialMessagePage() {
-        val page = runSuspendBlocking {
-            messageRepository.loadPage(messagePageSize(), null)
-        }
-        loadedMessages += page.items
-        nextMessageCursor = page.nextCursor
-        hasMoreMessages = page.hasMore
-    }
-
-    private fun loadNextMessagePage() {
-        if (!hasMoreMessages) {
+        if (isLoadingInitialMessages) {
             return
         }
 
-        val page = runSuspendBlocking {
-            messageRepository.loadPage(messagePageSize(), nextMessageCursor)
+        isLoadingInitialMessages = true
+        messagePagingState = PagingUiState.Loading
+        renderMessageListIfVisible()
+
+        launchRepositoryLoad(
+            block = { messageRepository.loadPage(messagePageSize(), null) },
+            onSuccess = { page ->
+                isLoadingInitialMessages = false
+                loadedMessages.clear()
+                loadedMessages += page.items
+                nextMessageCursor = page.nextCursor
+                hasMoreMessages = page.hasMore
+                messagePagingState = if (loadedMessages.isEmpty()) {
+                    PagingUiState.Empty
+                } else {
+                    PagingUiState.Content(loadedMessages.toList(), hasMoreMessages)
+                }
+                renderMessageListIfVisible()
+            },
+            onFailure = { error ->
+                isLoadingInitialMessages = false
+                messagePagingState = PagingUiState.Error(error.userFacingMessage("消息加载失败"))
+                renderMessageListIfVisible()
+            },
+        )
+    }
+
+    private fun loadNextMessagePage() {
+        if (!hasMoreMessages || isLoadingInitialMessages || isLoadingMoreMessages) {
+            return
         }
-        loadedMessages += page.items
-        nextMessageCursor = page.nextCursor
-        hasMoreMessages = page.hasMore
+
+        isLoadingMoreMessages = true
+        messagePagingState = PagingUiState.LoadingMore(loadedMessages.toList(), hasMoreMessages)
+        renderMessageListIfVisible()
+
+        launchRepositoryLoad(
+            block = { messageRepository.loadPage(messagePageSize(), nextMessageCursor) },
+            onSuccess = { page ->
+                isLoadingMoreMessages = false
+                loadedMessages += page.items
+                nextMessageCursor = page.nextCursor
+                hasMoreMessages = page.hasMore
+                messagePagingState = PagingUiState.Content(loadedMessages.toList(), hasMoreMessages)
+                renderMessageListIfVisible()
+            },
+            onFailure = { error ->
+                isLoadingMoreMessages = false
+                messagePagingState = PagingUiState.LoadMoreError(
+                    items = loadedMessages.toList(),
+                    message = error.userFacingMessage("加载更多消息失败"),
+                    hasMore = hasMoreMessages,
+                )
+                renderMessageListIfVisible()
+            },
+        )
     }
 
     private fun renderMessageList() {
-        val items = loadedMessages.map { it.toUnifiedListItem() }
         contentContainer.removeAllViews()
         contentContainer.addView(createMessageListScreen(
             context = this,
-            items = items,
-            totalLabel = "Showing ${items.size} of 10000 conversations",
-            hasMore = hasMoreMessages,
-            isLoadingMore = isLoadingMoreMessages,
+            state = messageListUiState(),
+            totalLabel = "已显示 ${loadedMessages.size} / 10000 个会话",
             initialScrollY = messageListScrollY,
             onOpenDetail = { item, scrollY ->
                 messageListScrollY = scrollY
@@ -286,14 +347,11 @@ class MainActivity : Activity() {
                 renderMessageDetail(item)
             },
             onLoadMore = { scrollY ->
-                if (isLoadingMoreMessages) {
-                    return@createMessageListScreen
-                }
                 messageListScrollY = scrollY
-                isLoadingMoreMessages = true
                 loadNextMessagePage()
-                isLoadingMoreMessages = false
-                renderMessageList()
+            },
+            onRetryInitial = {
+                loadInitialMessagePage()
             },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -317,14 +375,11 @@ class MainActivity : Activity() {
     }
 
     private fun renderMailList() {
-        val items = loadedMails.map { it.toUnifiedListItem() }
         contentContainer.removeAllViews()
         contentContainer.addView(createMailListScreen(
             context = this,
-            items = items,
-            totalLabel = "Showing ${items.size} of 10000 emails",
-            hasMore = hasMoreMails,
-            isLoadingMore = isLoadingMoreMails,
+            state = mailListUiState(),
+            totalLabel = "已显示 ${loadedMails.size} / 10000 封邮件",
             initialScrollY = mailListScrollY,
             onOpenDetail = { item, scrollY ->
                 mailListScrollY = scrollY
@@ -332,14 +387,11 @@ class MainActivity : Activity() {
                 renderMailDetail(item)
             },
             onLoadMore = { scrollY ->
-                if (isLoadingMoreMails) {
-                    return@createMailListScreen
-                }
                 mailListScrollY = scrollY
-                isLoadingMoreMails = true
                 loadNextMailPage()
-                isLoadingMoreMails = false
-                renderMailList()
+            },
+            onRetryInitial = {
+                loadInitialMailPage()
             },
         ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -363,7 +415,10 @@ class MainActivity : Activity() {
     }
 
     private fun ensureInitialMailsLoaded() {
-        if (loadedMails.isNotEmpty() || !hasMoreMails) {
+        if (loadedMails.isNotEmpty() || isLoadingInitialMails || !hasMoreMails) {
+            return
+        }
+        if (mailPagingState is PagingUiState.Error) {
             return
         }
 
@@ -371,26 +426,157 @@ class MainActivity : Activity() {
     }
 
     private fun loadInitialMailPage() {
-        val page = runSuspendBlocking {
-            mailRepository.loadPage(mailPageSize(), null)
-        }
-        loadedMails += page.items
-        nextMailCursor = page.nextCursor
-        hasMoreMails = page.hasMore
-    }
-
-    private fun loadNextMailPage() {
-        if (!hasMoreMails) {
+        if (isLoadingInitialMails) {
             return
         }
 
-        val page = runSuspendBlocking {
-            mailRepository.loadPage(mailPageSize(), nextMailCursor)
-        }
-        loadedMails += page.items
-        nextMailCursor = page.nextCursor
-        hasMoreMails = page.hasMore
+        isLoadingInitialMails = true
+        mailPagingState = PagingUiState.Loading
+        renderMailListIfVisible()
+
+        launchRepositoryLoad(
+            block = { mailRepository.loadPage(mailPageSize(), null) },
+            onSuccess = { page ->
+                isLoadingInitialMails = false
+                loadedMails.clear()
+                loadedMails += page.items
+                nextMailCursor = page.nextCursor
+                hasMoreMails = page.hasMore
+                mailPagingState = if (loadedMails.isEmpty()) {
+                    PagingUiState.Empty
+                } else {
+                    PagingUiState.Content(loadedMails.toList(), hasMoreMails)
+                }
+                renderMailListIfVisible()
+            },
+            onFailure = { error ->
+                isLoadingInitialMails = false
+                mailPagingState = PagingUiState.Error(error.userFacingMessage("邮件加载失败"))
+                renderMailListIfVisible()
+            },
+        )
     }
+
+    private fun loadNextMailPage() {
+        if (!hasMoreMails || isLoadingInitialMails || isLoadingMoreMails) {
+            return
+        }
+
+        isLoadingMoreMails = true
+        mailPagingState = PagingUiState.LoadingMore(loadedMails.toList(), hasMoreMails)
+        renderMailListIfVisible()
+
+        launchRepositoryLoad(
+            block = { mailRepository.loadPage(mailPageSize(), nextMailCursor) },
+            onSuccess = { page ->
+                isLoadingMoreMails = false
+                loadedMails += page.items
+                nextMailCursor = page.nextCursor
+                hasMoreMails = page.hasMore
+                mailPagingState = PagingUiState.Content(loadedMails.toList(), hasMoreMails)
+                renderMailListIfVisible()
+            },
+            onFailure = { error ->
+                isLoadingMoreMails = false
+                mailPagingState = PagingUiState.LoadMoreError(
+                    items = loadedMails.toList(),
+                    message = error.userFacingMessage("加载更多邮件失败"),
+                    hasMore = hasMoreMails,
+                )
+                renderMailListIfVisible()
+            },
+        )
+    }
+
+    private fun renderMessageListIfVisible() {
+        if (::contentContainer.isInitialized &&
+            currentRoute == AppRoutes.MESSAGE_LIST &&
+            selectedMessageItem == null
+        ) {
+            renderMessageList()
+        }
+    }
+
+    private fun renderMailListIfVisible() {
+        if (::contentContainer.isInitialized &&
+            currentRoute == AppRoutes.MAIL_LIST &&
+            selectedMailItem == null
+        ) {
+            renderMailList()
+        }
+    }
+
+    private fun messageListUiState(): PagingUiState<UnifiedListItem> =
+        when (val state = messagePagingState) {
+            PagingUiState.Loading -> PagingUiState.Loading
+            PagingUiState.Empty -> PagingUiState.Empty
+            is PagingUiState.Error -> PagingUiState.Error(state.message)
+            is PagingUiState.Content -> PagingUiState.Content(
+                items = state.items.map { it.toUnifiedListItem() },
+                hasMore = state.hasMore,
+            )
+            is PagingUiState.LoadingMore -> PagingUiState.LoadingMore(
+                items = state.items.map { it.toUnifiedListItem() },
+                hasMore = state.hasMore,
+            )
+            is PagingUiState.LoadMoreError -> PagingUiState.LoadMoreError(
+                items = state.items.map { it.toUnifiedListItem() },
+                message = state.message,
+                hasMore = state.hasMore,
+            )
+        }
+
+    private fun mailListUiState(): PagingUiState<UnifiedListItem> =
+        when (val state = mailPagingState) {
+            PagingUiState.Loading -> PagingUiState.Loading
+            PagingUiState.Empty -> PagingUiState.Empty
+            is PagingUiState.Error -> PagingUiState.Error(state.message)
+            is PagingUiState.Content -> PagingUiState.Content(
+                items = state.items.map { it.toUnifiedListItem() },
+                hasMore = state.hasMore,
+            )
+            is PagingUiState.LoadingMore -> PagingUiState.LoadingMore(
+                items = state.items.map { it.toUnifiedListItem() },
+                hasMore = state.hasMore,
+            )
+            is PagingUiState.LoadMoreError -> PagingUiState.LoadMoreError(
+                items = state.items.map { it.toUnifiedListItem() },
+                message = state.message,
+                hasMore = state.hasMore,
+            )
+        }
+
+    private fun <T> launchRepositoryLoad(
+        block: suspend () -> T,
+        onSuccess: (T) -> Unit,
+        onFailure: (Throwable) -> Unit,
+    ) {
+        pageLoadExecutor.execute {
+            try {
+                block.startCoroutine(object : Continuation<T> {
+                    override val context = EmptyCoroutineContext
+
+                    override fun resumeWith(result: Result<T>) {
+                        mainHandler.post {
+                            if (isActivityDestroyed) {
+                                return@post
+                            }
+                            result.fold(onSuccess = onSuccess, onFailure = onFailure)
+                        }
+                    }
+                })
+            } catch (error: Throwable) {
+                mainHandler.post {
+                    if (!isActivityDestroyed) {
+                        onFailure(error)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun Throwable.userFacingMessage(fallback: String): String =
+        message?.takeIf { it.isNotBlank() } ?: fallback
 
     private fun messagePageSize(): Int =
         screenVisiblePageSize(MESSAGE_ROW_HEIGHT_DP)
@@ -429,28 +615,6 @@ class MainActivity : Activity() {
         private const val SELECTED_TAB_BACKGROUND_COLOR = 0xFFEAF2FF.toInt()
         private const val TAG = "ByteTrainMainActivity"
     }
-}
-
-private fun <T> runSuspendBlocking(block: suspend () -> T): T {
-    var value: T? = null
-    var error: Throwable? = null
-    val latch = CountDownLatch(1)
-
-    block.startCoroutine(object : Continuation<T> {
-        override val context = EmptyCoroutineContext
-
-        override fun resumeWith(result: Result<T>) {
-            result.fold(
-                onSuccess = { value = it },
-                onFailure = { error = it },
-            )
-            latch.countDown()
-        }
-    })
-
-    latch.await()
-    error?.let { throw it }
-    return value ?: error("Suspend block completed without a value")
 }
 
 private fun dp(density: Float, value: Int): Int =

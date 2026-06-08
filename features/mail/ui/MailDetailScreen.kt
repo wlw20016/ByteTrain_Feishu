@@ -9,8 +9,13 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import com.bytetrain.feishuclone.shared.ui.BadgeModel
+import com.bytetrain.feishuclone.shared.ui.BadgeColors
+import com.bytetrain.feishuclone.shared.ui.BadgeRowStyle
+import com.bytetrain.feishuclone.shared.ui.SharedDetailHeaderStyle
 import com.bytetrain.feishuclone.shared.ui.UnifiedListItem
+import com.bytetrain.feishuclone.shared.ui.createSharedBadgeRow
+import com.bytetrain.feishuclone.shared.ui.createSharedDetailHeader
+import com.bytetrain.feishuclone.shared.ui.uiDp
 
 fun createMailDetailScreen(
     context: Context,
@@ -23,7 +28,14 @@ fun createMailDetailScreen(
         orientation = LinearLayout.VERTICAL
         setBackgroundColor(0xFFF6F8FB.toInt())
 
-        addView(createHeader(context, density, item, onBack), LinearLayout.LayoutParams(
+        addView(createSharedDetailHeader(
+            context = context,
+            density = density,
+            title = item.title,
+            backContentDescription = "返回邮箱列表",
+            onBack = onBack,
+            style = SharedDetailHeaderStyle(titleTextColor = 0xFF172033.toInt()),
+        ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
         ))
@@ -32,20 +44,31 @@ fun createMailDetailScreen(
             isFillViewport = true
             addView(LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(dp(density, 16), dp(density, 16), dp(density, 16), dp(density, 20))
+                setPadding(uiDp(density, 16), uiDp(density, 16), uiDp(density, 16), uiDp(density, 20))
 
                 addView(TextView(context).apply {
                     text = item.detail.title
                     textSize = 22f
                     typeface = Typeface.DEFAULT_BOLD
                     setTextColor(0xFF172033.toInt())
-                    setPadding(0, 0, 0, dp(density, 12))
+                    setPadding(0, 0, 0, uiDp(density, 12))
                 })
 
                 addView(createSenderRow(context, density, item))
 
                 if (item.badges.isNotEmpty()) {
-                    addView(createBadgeRow(context, density, item.badges))
+                    addView(createSharedBadgeRow(
+                        context = context,
+                        density = density,
+                        badges = item.badges,
+                        colorResolver = { BadgeColors(0xFF374151.toInt(), 0xFFEAF2FF.toInt()) },
+                        style = BadgeRowStyle(
+                            topPaddingDp = 0,
+                            bottomPaddingDp = 14,
+                            horizontalPaddingDp = 8,
+                            verticalPaddingDp = 4,
+                        ),
+                    ))
                 }
 
                 addView(createBodyCard(context, density, item), LinearLayout.LayoutParams(
@@ -61,50 +84,6 @@ fun createMailDetailScreen(
     }
 }
 
-private fun createHeader(
-    context: Context,
-    density: Float,
-    item: UnifiedListItem,
-    onBack: () -> Unit,
-): View =
-    LinearLayout(context).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-        setPadding(dp(density, 14), dp(density, 10), dp(density, 14), dp(density, 10))
-        setBackgroundColor(0xFFFFFFFF.toInt())
-
-        addView(TextView(context).apply {
-            text = "<"
-            textSize = 22f
-            gravity = Gravity.CENTER
-            setTextColor(0xFF172033.toInt())
-            isClickable = true
-            isFocusable = true
-            contentDescription = "返回邮箱列表"
-            setOnClickListener { onBack() }
-        }, LinearLayout.LayoutParams(
-            dp(density, 36),
-            dp(density, 36),
-        ).apply {
-            rightMargin = dp(density, 6)
-        })
-
-        addView(TextView(context).apply {
-            text = item.title
-            textSize = 16f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(0xFF172033.toInt())
-            maxLines = 1
-        }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-
-        addView(TextView(context).apply {
-            text = "..."
-            textSize = 20f
-            gravity = Gravity.END
-            setTextColor(0xFF6B7280.toInt())
-        })
-    }
-
 private fun createSenderRow(
     context: Context,
     density: Float,
@@ -113,7 +92,7 @@ private fun createSenderRow(
     LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
-        setPadding(0, 0, 0, dp(density, 14))
+        setPadding(0, 0, 0, uiDp(density, 14))
 
         addView(TextView(context).apply {
             text = item.avatar.label
@@ -123,10 +102,10 @@ private fun createSenderRow(
             setTextColor(0xFFFFFFFF.toInt())
             background = roundedBackground(density, 0xFF2D9CDB.toInt(), 10)
         }, LinearLayout.LayoutParams(
-            dp(density, 44),
-            dp(density, 44),
+            uiDp(density, 44),
+            uiDp(density, 44),
         ).apply {
-            rightMargin = dp(density, 10)
+            rightMargin = uiDp(density, 10)
         })
 
         addView(LinearLayout(context).apply {
@@ -151,31 +130,6 @@ private fun createSenderRow(
         ))
     }
 
-private fun createBadgeRow(
-    context: Context,
-    density: Float,
-    badges: List<BadgeModel>,
-): View =
-    LinearLayout(context).apply {
-        orientation = LinearLayout.HORIZONTAL
-        setPadding(0, 0, 0, dp(density, 14))
-
-        badges.forEach { badge ->
-            addView(TextView(context).apply {
-                text = badge.text
-                textSize = 11f
-                setTextColor(0xFF374151.toInt())
-                setPadding(dp(density, 8), dp(density, 4), dp(density, 8), dp(density, 4))
-                background = roundedBackground(density, 0xFFEAF2FF.toInt(), 8)
-            }, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                rightMargin = dp(density, 6)
-            })
-        }
-    }
-
 private fun createBodyCard(
     context: Context,
     density: Float,
@@ -183,18 +137,18 @@ private fun createBodyCard(
 ): View =
     LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
-        setPadding(dp(density, 14), dp(density, 14), dp(density, 14), dp(density, 14))
+        setPadding(uiDp(density, 14), uiDp(density, 14), uiDp(density, 14), uiDp(density, 14))
         background = roundedBackground(density, 0xFFFFFFFF.toInt(), 8)
 
         addView(TextView(context).apply {
             text = item.detail.body
             textSize = 15f
             setTextColor(0xFF374151.toInt())
-            setPadding(0, 0, 0, dp(density, 12))
+            setPadding(0, 0, 0, uiDp(density, 12))
         })
 
         addView(TextView(context).apply {
-            text = "请在移动端确认后续处理，相关更新会继续同步到邮箱列表。"
+            text = "请在移动端确认后继续处理，相关更新会继续同步到邮箱列表。"
             textSize = 15f
             setTextColor(0xFF374151.toInt())
         })
@@ -203,9 +157,6 @@ private fun createBodyCard(
 private fun roundedBackground(density: Float, color: Int, radiusDp: Int): GradientDrawable =
     GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
-        cornerRadius = dp(density, radiusDp).toFloat()
+        cornerRadius = uiDp(density, radiusDp).toFloat()
         setColor(color)
     }
-
-private fun dp(density: Float, value: Int): Int =
-    (value * density).toInt()

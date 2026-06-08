@@ -54,7 +54,7 @@ if (-not (Test-Path $mainActivityPath)) {
         },
         @{
             Name = "MainActivity labels total emails"
-            Pattern = "Showing\s+\$\{items\.size\}\s+of\s+10000\s+emails"
+            Pattern = "已显示\s+\$\{items\.size\}\s+/\s+10000\s+封邮件"
         },
         @{
             Name = "MainActivity no longer uses preview-only seed data"
@@ -95,11 +95,11 @@ if (-not (Test-Path $screenPath)) {
         },
         @{
             Name = "Mail list renders loading more state"
-            Pattern = "Loading more mail"
+            Pattern = "正在加载更多邮件"
         },
         @{
             Name = "Mail list renders no more state"
-            Pattern = "No more mail"
+            Pattern = "没有更多邮件"
         },
         @{
             Name = "Mail list restores scroll before first draw"

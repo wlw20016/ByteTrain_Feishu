@@ -32,10 +32,10 @@ private fun MailItem.toBadges(): List<BadgeModel> {
     val badges = mutableListOf<BadgeModel>()
 
     if (unread) {
-        badges += BadgeModel(text = "Unread", tone = "unread")
+        badges += BadgeModel(text = "未读", tone = "unread")
     }
     if (attachmentCount > 0) {
-        badges += BadgeModel(text = "$attachmentCount attachments", tone = "attachment")
+        badges += BadgeModel(text = "${attachmentCount} 个附件", tone = "attachment")
     }
     badges += BadgeModel(text = mailType.displayText(), tone = mailType.badgeTone())
     actionText?.takeIf { it.isNotBlank() }?.let { text ->
@@ -51,22 +51,22 @@ private fun MailItem.toDetailModel(): DetailModel =
         title = subject,
         body = preview,
         metas = listOfNotNull(
-            DetailMeta(label = "Sender", value = sender),
-            DetailMeta(label = "Type", value = mailType.displayText()),
-            DetailMeta(label = "Unread", value = unread.yesNoText()),
-            DetailMeta(label = "Attachments", value = attachmentCount.toString()),
-            actionText?.takeIf { it.isNotBlank() }?.let { DetailMeta(label = "Action", value = it) },
-            DetailMeta(label = "Time", value = formatMailTimestamp(timestampMillis)),
+            DetailMeta(label = "发件人", value = sender),
+            DetailMeta(label = "类型", value = mailType.displayText()),
+            DetailMeta(label = "未读", value = unread.yesNoText()),
+            DetailMeta(label = "附件", value = attachmentCount.toString()),
+            actionText?.takeIf { it.isNotBlank() }?.let { DetailMeta(label = "操作", value = it) },
+            DetailMeta(label = "时间", value = formatMailTimestamp(timestampMillis)),
         ),
     )
 
 private fun MailType.displayText(): String =
     when (this) {
-        MailType.REMINDER -> "Reminder"
-        MailType.SYSTEM -> "System"
-        MailType.COLLABORATION -> "Collaboration"
-        MailType.REPORT -> "Report"
-        MailType.UPDATE -> "Update"
+        MailType.REMINDER -> "提醒"
+        MailType.SYSTEM -> "系统"
+        MailType.COLLABORATION -> "协作"
+        MailType.REPORT -> "报告"
+        MailType.UPDATE -> "更新"
     }
 
 private fun MailType.badgeTone(): String =
@@ -88,7 +88,7 @@ private fun MailType.avatarBackgroundColor(): String =
     }
 
 private fun Boolean.yesNoText(): String =
-    if (this) "Yes" else "No"
+    if (this) "是" else "否"
 
 private fun String.firstLabel(): String =
     firstOrNull()?.uppercaseChar()?.toString() ?: "M"

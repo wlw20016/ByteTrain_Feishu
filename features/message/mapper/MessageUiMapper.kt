@@ -38,13 +38,13 @@ private fun MessageItem.toBadges(): List<BadgeModel> {
         )
     }
     if (isPinned) {
-        badges += BadgeModel(text = "Pinned", tone = "pinned")
+        badges += BadgeModel(text = "置顶", tone = "pinned")
     }
     if (isMuted) {
-        badges += BadgeModel(text = "Muted", tone = "muted")
+        badges += BadgeModel(text = "免打扰", tone = "muted")
     }
     if (isBot) {
-        badges += BadgeModel(text = "Bot", tone = "bot")
+        badges += BadgeModel(text = "机器人", tone = "bot")
     }
 
     return badges
@@ -56,20 +56,20 @@ private fun MessageItem.toDetailModel(): DetailModel =
         title = conversationName,
         body = lastMessagePreview,
         metas = listOf(
-            DetailMeta(label = "Type", value = conversationType.displayText()),
-            DetailMeta(label = "Unread", value = unreadCount.toString()),
-            DetailMeta(label = "Pinned", value = isPinned.yesNoText()),
-            DetailMeta(label = "Muted", value = isMuted.yesNoText()),
-            DetailMeta(label = "Bot", value = isBot.yesNoText()),
-            DetailMeta(label = "Time", value = formatMessageTimestamp(lastMessageTimeMillis)),
+            DetailMeta(label = "类型", value = conversationType.displayText()),
+            DetailMeta(label = "未读", value = unreadCount.toString()),
+            DetailMeta(label = "置顶", value = isPinned.yesNoText()),
+            DetailMeta(label = "免打扰", value = isMuted.yesNoText()),
+            DetailMeta(label = "机器人", value = isBot.yesNoText()),
+            DetailMeta(label = "时间", value = formatMessageTimestamp(lastMessageTimeMillis)),
         ),
     )
 
 private fun ConversationType.displayText(): String =
     when (this) {
-        ConversationType.SINGLE -> "Single"
-        ConversationType.GROUP -> "Group"
-        ConversationType.BOT -> "Bot"
+        ConversationType.SINGLE -> "单聊"
+        ConversationType.GROUP -> "群聊"
+        ConversationType.BOT -> "机器人"
     }
 
 private fun ConversationType.avatarBackgroundColor(): String =
@@ -80,7 +80,7 @@ private fun ConversationType.avatarBackgroundColor(): String =
     }
 
 private fun Boolean.yesNoText(): String =
-    if (this) "Yes" else "No"
+    if (this) "是" else "否"
 
 private fun String.firstLabel(): String =
     firstOrNull()?.uppercaseChar()?.toString() ?: "M"

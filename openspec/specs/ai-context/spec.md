@@ -2,7 +2,6 @@
 
 ## Purpose
 TBD - created by archiving change improve-ai-context. Update Purpose after archive.
-
 ## Requirements
 ### Requirement: AI 协作证据 MUST 被记录
 
@@ -16,13 +15,14 @@ TBD - created by archiving change improve-ai-context. Update Purpose after archi
 
 ### Requirement: AI 可读工程文档 MUST 保持更新
 
-项目 MUST 维护结构、模块边界、构建命令、常见错误和 IDE 工作流等 AI 可读文档。
+Project AI context, current OpenSpec specs, and review-facing docs MUST be stored as readable UTF-8 text. They MUST avoid mojibake so future AI assistants and human reviewers can consume the context without relying on chat history.
 
-#### Scenario: 后续 AI 助手诊断构建问题
+#### Scenario: AI assistant reads project context
 
-- Given AI 助手读取 `docs/ai-context`
-- When 它分析构建失败
-- Then 它可以使用当前模块边界、命令和已知错误记录进行推理
+- Given an AI assistant reads current specs and `docs/ai-context`
+- When it parses requirements, build commands, module boundaries, and known issues
+- Then the text is readable UTF-8
+- And known historical encoding exclusions are documented if any archived files are intentionally left unchanged
 
 ### Requirement: IDE 与 Bazel 协作方式 MUST 文档化
 
@@ -33,3 +33,4 @@ TBD - created by archiving change improve-ai-context. Update Purpose after archi
 - Given 组员按照 IDE/Bazel 工作流文档操作
 - When 组员运行文档中的命令
 - Then 组员可以编辑、构建和诊断项目，而不依赖聊天记录
+

@@ -4,6 +4,9 @@ $ErrorActionPreference = "Stop"
 $root = Resolve-Path (Join-Path $PSScriptRoot "..\..\..")
 $docPath = Join-Path $root "docs/ai-context/ui/ui-main-flow-doc-001.md"
 $tasksPath = Join-Path $root "openspec/changes/add-ui-main-flow/tasks.md"
+if (-not (Test-Path $tasksPath)) {
+    $tasksPath = Join-Path $root "openspec/changes/archive/2026-06-06-add-ui-main-flow/tasks.md"
+}
 
 $failures = New-Object System.Collections.Generic.List[string]
 

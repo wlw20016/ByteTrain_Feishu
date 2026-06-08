@@ -5,6 +5,7 @@
     "BazelBuild.vscode-bazel",
     "zxh404.vscode-proto3",
     "redhat.java",
+    "vscjava.vscode-java-debug",
     "vscjava.vscode-gradle"
   ]
 }

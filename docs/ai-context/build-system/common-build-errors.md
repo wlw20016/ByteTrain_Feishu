@@ -229,6 +229,37 @@ Bazel-built APK 和 ADB 均可用，但 `adb devices` 没有返回处于 `device
 
 2026-06-06 重跑后进入预期 no-device diagnostic path。IDE helper 在同一输出流中打印相同诊断行，并以 `Bazel Android app run reported a run prerequisite or launch failure.` 失败。由于没有在线设备，未尝试 install 和 activity launch。
 
+### BZL-FULL: 全仓 Bazel 验证入口和 query 引号问题
+
+命令：
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\verify-full-bazel-workspace.ps1
+    bazel --batch build //... --curses=no --show_progress_rate_limit=60 --jobs=4
+    bazel --batch test //... --curses=no --show_progress_rate_limit=60 --jobs=4
+    bazel --batch query --output=label_kind --curses=no "kind('.* rule', //...)"
+
+输出摘要：
+
+    Access is denied.
+    Rule targets: 0
+    ERROR: Error while parsing 'kind(.* rule, //...)': syntax error at 'rule , //...'
+
+根因：
+
+初次在受限执行入口运行时，当前环境不能调用 PowerShell 中解析到的本机 `bazel` shim/二进制，失败发生在 Bazel target analysis 前，和 `//...` 下具体 target 无关。允许执行本机 Bazel 后，build/test 通过，但 query 表达式 `kind(\".* rule\", //...)` 经 Windows PowerShell/Bazel shim 传递后被剥掉双引号，Bazel 实际收到 `kind(.* rule, //...)` 并报语法错误。query 未返回任何 rule targets 时，脚本按失败处理，避免把入口权限或 query 表达式失败误判为全仓通过。
+
+修复方式：
+
+在受信任的本机 shell 中运行同一个验证入口，或允许当前执行环境执行本机 Bazel。若脱离受限入口后仍输出 `Access is denied.`，按 BZL-FINAL-009 的路径修复 Bazel/Bazelisk 安装目录 ACL、重新安装 Bazel/Bazelisk，或将可执行 Bazel 二进制路径放到 PATH 前置位置。query 表达式改为 `kind('.* rule', //...)`，避免 Windows shim 剥掉字符串引号。
+
+重试命令：
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\verify-full-bazel-workspace.ps1
+
+验证结果：
+
+2026-06-08 允许当前执行环境调用本机 Bazel 并修正 query 表达式后，全仓验证脚本通过。`docs/evidence/full-bazel-workspace-evidence.md` 记录：`bazel --batch build //...` 通过，输出包含 `Analyzed 25 targets`、`Found 25 targets` 和 `Build completed successfully, 1 total action`；`bazel --batch test //...` 通过，输出包含 `Found 24 targets and 1 test target`、`//sdk/rust:bytetrain_feed_sdk_test (cached) PASSED` 和 `Executed 0 out of 1 test: 1 test passes`；query 通过并返回 `Rule targets: 25`。
+
 ## AI-ARCH 审计
 
 2026-06-05 复核：本文档已覆盖最终 Bazel 验证前后仍需要保留的构建失败和环境阻塞，包括 proto target 兼容、首次工具链超时、Bzlmod 外部依赖下载、Android app target 配置、非 ASCII 主机名日志噪声和受限入口 `Access is denied`。当前无未记录的最终验证阻塞。

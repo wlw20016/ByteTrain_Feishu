@@ -6,118 +6,65 @@ import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
-import com.bytetrain.feishuclone.shared.ui.BadgeModel
+import com.bytetrain.feishuclone.shared.list.PagingUiState
+import com.bytetrain.feishuclone.shared.ui.BadgeColors
+import com.bytetrain.feishuclone.shared.ui.BadgeRowStyle
+import com.bytetrain.feishuclone.shared.ui.SharedPagedListConfig
 import com.bytetrain.feishuclone.shared.ui.UnifiedListItem
+import com.bytetrain.feishuclone.shared.ui.createSharedBadgeRow
+import com.bytetrain.feishuclone.shared.ui.createSharedPagedListScreen
+import com.bytetrain.feishuclone.shared.ui.toColorIntOrNull
+import com.bytetrain.feishuclone.shared.ui.uiDp
 
 fun createMessageListScreen(
     context: Context,
-    items: List<UnifiedListItem>,
+    state: PagingUiState<UnifiedListItem>,
     totalLabel: String,
-    hasMore: Boolean,
-    isLoadingMore: Boolean,
     initialScrollY: Int,
     onOpenDetail: (UnifiedListItem, Int) -> Unit,
     onLoadMore: (Int) -> Unit,
-): View {
-    val density = context.resources.displayMetrics.density
-
-    val scrollView = ScrollView(context).apply {
-        isFillViewport = true
-        addView(LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(density, 16), dp(density, 12), dp(density, 16), dp(density, 12))
-
-            addView(createHeader(context, density, totalLabel))
-
-            items.forEach { item ->
-                addView(createMessageRow(context, density, item, onOpenDetail))
-            }
-
-            addView(createLoadMoreFooter(context, density, hasMore, isLoadingMore))
-        })
-
-        setOnScrollChangeListener { view, _, scrollY, _, _ ->
-            if (!hasMore || isLoadingMore) {
-                return@setOnScrollChangeListener
-            }
-
-            val child = (view as ScrollView).getChildAt(0) ?: return@setOnScrollChangeListener
-            val distanceToBottom = child.bottom - (view.height + scrollY)
-            if (distanceToBottom <= dp(density, 96)) {
-                onLoadMore(scrollY)
-            }
-        }
-    }
-
-    scrollView.restoreScrollBeforeDraw(initialScrollY)
-
-    return scrollView
-}
-
-private fun ScrollView.restoreScrollBeforeDraw(initialScrollY: Int) {
-    viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-        override fun onPreDraw(): Boolean {
-            if (viewTreeObserver.isAlive) {
-                viewTreeObserver.removeOnPreDrawListener(this)
-            }
-            scrollTo(0, initialScrollY)
-            return true
-        }
-    })
-}
-
-private fun createHeader(
-    context: Context,
-    density: Float,
-    totalLabel: String,
+    onRetryInitial: () -> Unit,
 ): View =
-    LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-        setPadding(0, 0, 0, dp(density, 12))
-
-        addView(TextView(context).apply {
-            text = "Messages"
-            textSize = 22f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(0xFF1F2933.toInt())
-        })
-
-        addView(TextView(context).apply {
-            text = totalLabel
-            textSize = 13f
-            setTextColor(0xFF6B7280.toInt())
-        })
-    }
+    createSharedPagedListScreen(
+        context = context,
+        state = state,
+        config = SharedPagedListConfig(
+            title = "消息",
+            totalLabel = totalLabel,
+            loadingText = "正在加载消息...",
+            emptyText = "暂无消息",
+            loadingMoreText = "正在加载更多消息...",
+            loadMorePromptText = "上滑加载更多",
+            endText = "没有更多消息",
+            titleTextColor = 0xFF1F2933.toInt(),
+            itemRenderer = ::createMessageRow,
+        ),
+        initialScrollY = initialScrollY,
+        onOpenDetail = onOpenDetail,
+        onLoadMore = onLoadMore,
+        onRetryInitial = onRetryInitial,
+    )
 
 private fun createMessageRow(
     context: Context,
     density: Float,
     item: UnifiedListItem,
-    onOpenDetail: (UnifiedListItem, Int) -> Unit,
 ): View =
     LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
-        setPadding(0, dp(density, 10), 0, dp(density, 10))
-        isClickable = true
-        isFocusable = true
-        setOnClickListener {
-            val scrollY = parentScrollY()
-            onOpenDetail(item, scrollY)
-        }
+        setPadding(0, uiDp(density, 10), 0, uiDp(density, 10))
 
         addView(createAvatar(context, density, item), LinearLayout.LayoutParams(
-            dp(density, 44),
-            dp(density, 44),
+            uiDp(density, 44),
+            uiDp(density, 44),
         ))
 
         addView(LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(density, 12), 0, 0, 0)
+            setPadding(uiDp(density, 12), 0, 0, 0)
 
             addView(LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -147,7 +94,13 @@ private fun createMessageRow(
             })
 
             if (item.badges.isNotEmpty()) {
-                addView(createBadgeRow(context, density, item.badges))
+                addView(createSharedBadgeRow(
+                    context = context,
+                    density = density,
+                    badges = item.badges,
+                    colorResolver = ::messageBadgeColors,
+                    style = BadgeRowStyle(topPaddingDp = 6, horizontalPaddingDp = 6, verticalPaddingDp = 2),
+                ))
             }
         }, LinearLayout.LayoutParams(
             0,
@@ -155,17 +108,6 @@ private fun createMessageRow(
             1f,
         ))
     }
-
-private fun View.parentScrollY(): Int {
-    var current = parent
-    while (current is View) {
-        if (current is ScrollView) {
-            return current.scrollY
-        }
-        current = current.parent
-    }
-    return 0
-}
 
 private fun createAvatar(
     context: Context,
@@ -182,84 +124,24 @@ private fun createAvatar(
             shape = GradientDrawable.OVAL
             setColor(item.avatar.backgroundColor?.toColorIntOrNull() ?: 0xFF2F80ED.toInt())
         }
-        minWidth = dp(density, 44)
-        minHeight = dp(density, 44)
+        minWidth = uiDp(density, 44)
+        minHeight = uiDp(density, 44)
     }
 
-private fun createBadgeRow(
-    context: Context,
-    density: Float,
-    badges: List<BadgeModel>,
-): View =
-    LinearLayout(context).apply {
-        orientation = LinearLayout.HORIZONTAL
-        setPadding(0, dp(density, 6), 0, 0)
-
-        badges.forEach { badge ->
-            addView(TextView(context).apply {
-                text = badge.text
-                textSize = 11f
-                setTextColor(badge.tone.badgeTextColor())
-                setPadding(dp(density, 6), dp(density, 2), dp(density, 6), dp(density, 2))
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    cornerRadius = dp(density, 8).toFloat()
-                    setColor(badge.tone.badgeBackgroundColor())
-                }
-            }, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                rightMargin = dp(density, 6)
-            })
-        }
-    }
-
-private fun createLoadMoreFooter(
-    context: Context,
-    density: Float,
-    hasMore: Boolean,
-    isLoadingMore: Boolean,
-): View =
-    LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-        gravity = Gravity.CENTER
-        setPadding(0, dp(density, 12), 0, dp(density, 8))
-
-        addView(TextView(context).apply {
-            text = when {
-                isLoadingMore -> "Loading more messages..."
-                hasMore -> "Pull up to load more"
-                else -> "No more messages"
-            }
-            textSize = 12f
-            gravity = Gravity.CENTER
-            setTextColor(0xFF8A94A6.toInt())
-        })
-    }
-
-private fun String.badgeBackgroundColor(): Int =
-    when (this) {
-        "unread" -> 0xFFFFE8E8.toInt()
-        "pinned" -> 0xFFE8F1FF.toInt()
-        "muted" -> 0xFFF1F3F5.toInt()
-        "bot" -> 0xFFF2E9FF.toInt()
-        else -> 0xFFE5E7EB.toInt()
-    }
-
-private fun String.badgeTextColor(): Int =
-    when (this) {
-        "unread" -> 0xFFC92A2A.toInt()
-        "pinned" -> 0xFF2563EB.toInt()
-        "muted" -> 0xFF6B7280.toInt()
-        "bot" -> 0xFF7E22CE.toInt()
-        else -> 0xFF374151.toInt()
-    }
-
-private fun String.toColorIntOrNull(): Int? =
-    removePrefix("#").toLongOrNull(16)?.let { value ->
-        (0xFF000000 or value).toInt()
-    }
-
-private fun dp(density: Float, value: Int): Int =
-    (value * density).toInt()
+private fun messageBadgeColors(tone: String): BadgeColors =
+    BadgeColors(
+        textColor = when (tone) {
+            "unread" -> 0xFFC92A2A.toInt()
+            "pinned" -> 0xFF2563EB.toInt()
+            "muted" -> 0xFF6B7280.toInt()
+            "bot" -> 0xFF7E22CE.toInt()
+            else -> 0xFF374151.toInt()
+        },
+        backgroundColor = when (tone) {
+            "unread" -> 0xFFFFE8E8.toInt()
+            "pinned" -> 0xFFE8F1FF.toInt()
+            "muted" -> 0xFFF1F3F5.toInt()
+            "bot" -> 0xFFF2E9FF.toInt()
+            else -> 0xFFE5E7EB.toInt()
+        },
+    )

@@ -18,7 +18,9 @@ kt_android_library(
         "//features/message:domain",
         "//features/message:mapper",
         "//features/message:ui",
+        "//shared/list:list",
         "//shared/navigation:navigation",
+        "//shared/ui:ui_android",
         "//shared/ui:ui_models",
     ],
 )
