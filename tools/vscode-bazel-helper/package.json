@@ -15,6 +15,9 @@
     "onCommand:bytetrain.bazelHelper.buildApp",
     "onCommand:bytetrain.bazelHelper.runApp",
     "onCommand:bytetrain.bazelHelper.assembleDebug",
+    "onCommand:bytetrain.bazelHelper.prepareDebug",
+    "onCommand:bytetrain.bazelHelper.prepareAndroidJdwpDebug",
+    "onCommand:bytetrain.bazelHelper.startAndroidJdwpDebug",
     "onCommand:bytetrain.bazelHelper.buildProto",
     "onCommand:bytetrain.bazelHelper.buildFeatures",
     "onCommand:bytetrain.bazelHelper.testRustSdk",
@@ -38,6 +41,18 @@
       {
         "command": "bytetrain.bazelHelper.assembleDebug",
         "title": "Gradle: Assemble Debug"
+      },
+      {
+        "command": "bytetrain.bazelHelper.prepareDebug",
+        "title": "Android Studio: Prepare Debug"
+      },
+      {
+        "command": "bytetrain.bazelHelper.prepareAndroidJdwpDebug",
+        "title": "VS Code: Prepare Android JDWP Debug"
+      },
+      {
+        "command": "bytetrain.bazelHelper.startAndroidJdwpDebug",
+        "title": "VS Code: Start Android JDWP Debug"
       },
       {
         "command": "bytetrain.bazelHelper.buildProto",

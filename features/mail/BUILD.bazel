@@ -51,7 +51,11 @@ kt_android_library(
     name = "ui",
     srcs = MAIL_UI_SRCS,
     custom_package = "com.bytetrain.feishuclone.features.mail",
-    deps = ["//shared/ui:ui_models"],
+    deps = [
+        "//shared/list:list",
+        "//shared/ui:ui_android",
+        "//shared/ui:ui_models",
+    ],
 )
 
 kt_jvm_library(

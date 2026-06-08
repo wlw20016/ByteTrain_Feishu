@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Android: Attach ByteTrain App (JDWP)",
+      "type": "java",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 8700,
+      "timeout": 30000,
+      "preLaunchTask": "VS Code: prepare Android JDWP debug"
+    },
+    {
+      "name": "Android: Attach ByteTrain App (JDWP, already prepared)",
+      "type": "java",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 8700,
+      "timeout": 30000
+    }
+  ]
+}

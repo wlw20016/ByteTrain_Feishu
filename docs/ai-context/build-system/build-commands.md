@@ -186,6 +186,42 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\checks\ide\check-i
 - 在受限 shell 中直接运行 `bazel` 仍会在 Bazel analysis 前输出 `Access is denied.`。上述验证已通过获准的本机 Bazel 执行路径重跑，和既有 BZL-FINAL-009 环境说明一致。
 - 2026-06-06 本机没有连接设备或模拟器，因此未尝试 install 和 activity launch。这是设备前置条件阻塞，不是 APK build failure。
 
+## 全仓 Bazel 验证
+
+BZL-FULL 记录日期：2026-06-08。
+
+验收入口：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\verify-full-bazel-workspace.ps1
+```
+
+验收目标集合：
+
+- Build：`//...`
+- Test：`//...`
+- 允许排除：无
+- Query 摘要：`bazel --batch query --output=label_kind --curses=no "kind('.* rule', //...)"`
+
+完整 evidence 文件：
+
+- `docs/evidence/full-bazel-workspace-evidence.md`
+
+本次执行结果：
+
+| 检查 | 命令 | 结果 |
+| --- | --- | --- |
+| Full workspace build | `bazel --batch build //... --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Analyzed 25 targets`、`Found 25 targets` 和 `Build completed successfully, 1 total action`。 |
+| Full workspace test | `bazel --batch test //... --curses=no --show_progress_rate_limit=60 --jobs=4` | 通过；输出包含 `Found 24 targets and 1 test target`、`//sdk/rust:bytetrain_feed_sdk_test (cached) PASSED` 和 `Executed 0 out of 1 test: 1 test passes`。 |
+| Full workspace query | `bazel --batch query --output=label_kind --curses=no "kind('.* rule', //...)"` | 通过；输出包含 `Rule targets: 25`，覆盖 app、features、proto、Rust SDK、shared targets。 |
+
+结论：
+
+- `//...` 是当前全仓验收集合，没有记录任何 target 排除。
+- 2026-06-08 允许当前执行环境调用本机 Bazel 后，`bazel --batch build //...` 和 `bazel --batch test //...` 均通过。
+- Windows PowerShell/Bazel shim 会剥掉 query 表达式中的转义双引号；脚本改用 `kind('.* rule', //...)` 后 query 摘要通过。
+- Bazel 9.1.0 仍会输出非 ASCII 主机名相关 Java log handler 噪声；该噪声未影响 build/test/query 退出码。
+
 ## Rust async/protobuf SDK 验证
 
 `complete-rust-sdk-async-protobuf` 没有新增 Bazel target 或外部 Rust crate，`sdk/rust/BUILD.bazel` 继续暴露：

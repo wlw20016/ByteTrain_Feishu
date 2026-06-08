@@ -21,6 +21,16 @@ const COMMANDS = [
     target: "gradle-app",
   },
   {
+    id: "bytetrain.bazelHelper.prepareDebug",
+    label: "Android Studio: Prepare Debug",
+    target: "gradle-app",
+  },
+  {
+    id: "bytetrain.bazelHelper.prepareAndroidJdwpDebug",
+    label: "VS Code: Prepare Android JDWP Debug",
+    target: "android-jdwp-debug",
+  },
+  {
     id: "bytetrain.bazelHelper.buildProto",
     label: "Bazel: Build Proto",
     target: "proto",
@@ -81,6 +91,11 @@ function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand("bytetrain.bazelHelper.copyDiagnosticContext", () =>
       copyDiagnosticContext(output)
+    )
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("bytetrain.bazelHelper.startAndroidJdwpDebug", () =>
+      startAndroidJdwpDebug()
     )
   );
 
@@ -194,6 +209,22 @@ async function openWorkspaceDocument(relativePath) {
   const workspaceRoot = getWorkspaceRoot();
   const document = await vscode.workspace.openTextDocument(path.join(workspaceRoot, relativePath));
   await vscode.window.showTextDocument(document);
+}
+
+async function startAndroidJdwpDebug() {
+  const folder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0];
+  getWorkspaceRoot();
+  const started = await vscode.debug.startDebugging(folder, {
+    name: "Android: Attach ByteTrain App (JDWP, already prepared)",
+    type: "java",
+    request: "attach",
+    hostName: "localhost",
+    port: 8700,
+    timeout: 30000,
+  });
+  if (!started) {
+    vscode.window.showErrorMessage("Android JDWP debug did not start. Check localhost:8700 and Java Debugger extension.");
+  }
 }
 
 function deactivate() {}

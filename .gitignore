@@ -33,6 +33,7 @@ target/
 !.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/tasks.json
+!.vscode/launch.json
 *.iml
 
 # Local Bazel overrides

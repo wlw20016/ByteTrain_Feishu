@@ -76,11 +76,11 @@ if (-not (Test-Path $screenPath)) {
         },
         @{
             Name = "Message list renders loading more state"
-            Pattern = "Loading more messages"
+            Pattern = "正在加载更多消息"
         },
         @{
             Name = "Message list renders no more state"
-            Pattern = "No more messages"
+            Pattern = "没有更多消息"
         },
         @{
             Name = "Message list restores scroll before first draw"

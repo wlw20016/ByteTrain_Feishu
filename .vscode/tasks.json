@@ -62,6 +62,21 @@
       "problemMatcher": []
     },
     {
+      "label": "VS Code: prepare Android JDWP debug",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/commands/ide-build.ps1",
+        "-Target",
+        "android-jdwp-debug"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
       "label": "Bazel: build proto",
       "type": "shell",
       "command": "powershell",

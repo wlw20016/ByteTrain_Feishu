@@ -147,13 +147,21 @@ Android App MUST 提供消息和邮箱两个 Tab，作为核心导航入口。
 
 ### Requirement: 列表和详情 UI MUST 复用共享模型
 
-消息和邮箱 UI MUST 先将业务模型映射为共享列表/详情 UI 模型，再进行渲染。
+Message and mail UI MUST reuse shared list, pagination, footer, badge, scroll-restoration, and applicable detail primitives in addition to shared UI data models. Feature screens MAY keep product-specific row/card and detail body rendering when the visual interaction differs.
 
-#### Scenario: 打开详情页
+#### Scenario: Message and mail reuse the shared list shell
 
-- Given 用户点击消息或邮箱列表项
-- When 详情页打开
-- Then 页面基于 `DetailModel` 渲染，而不是直接依赖功能专属渲染逻辑
+- Given message and mail lists both render paged `UnifiedListItem` content
+- When the list screens are built
+- Then both screens use the same shared list shell for scroll container, load-more trigger, footer state, and scroll restoration
+- And feature-specific row or card rendering is supplied through configuration or callbacks
+
+#### Scenario: Shared detail primitives are reused
+
+- Given message and mail detail pages both need compact navigation headers
+- When the detail screens are built
+- Then both screens use shared header/back affordance primitives
+- And message chat content and mail reading content remain feature-specific where their layout semantics differ
 
 ### Requirement: 分页 UI 状态 MUST 显式表达
 
@@ -184,4 +192,42 @@ UI MUST 显式表达加载、空态、错误、内容、加载更多和加载更
 - Given 邮箱 mock repository 已加载到最后一页 cursor
 - When UI 请求下一页邮件
 - Then repository 返回最后一批邮件，`hasMore` 为 `false`，并且 `nextCursor` 为 `null`
+
+### Requirement: Paging UI state MUST explicitly represent loading flows
+
+UI MUST explicitly represent loading, empty, error, content, loading-more, and load-more-error states. Page reads from the UI layer MUST be launched asynchronously and MUST NOT block the UI call path with a synchronous wait helper.
+
+#### Scenario: First page loads asynchronously
+
+- Given the user opens the message or mail tab with no loaded content
+- When the app requests the first page
+- Then the UI enters a first-page loading state
+- And the page request runs asynchronously
+- And the UI does not use a blocking suspend bridge to wait for the result
+
+#### Scenario: Next page loads asynchronously
+
+- Given the list already has loaded content and `hasMore` is true
+- When the user scrolls near the bottom
+- Then the UI enters a loading-more state while preserving the existing items
+- And the next page request runs asynchronously
+- And duplicate load-more triggers are ignored until the in-flight request completes
+
+#### Scenario: Async failure preserves recoverable state
+
+- Given a first-page or next-page request fails
+- When the failure is reported back to the UI
+- Then first-page failure is rendered as an error state
+- And next-page failure is rendered as load-more-error while preserving already loaded items
+
+### Requirement: User-visible mobile text MUST be readable UTF-8
+
+Android user-visible text for message and mail flows MUST be readable UTF-8 text and MUST NOT contain mojibake artifacts.
+
+#### Scenario: User opens message and mail screens
+
+- Given the app is launched on a device or emulator
+- When the user views bottom tabs, list headers, detail headers, content descriptions, and detail body placeholders
+- Then Chinese text is readable
+- And no mojibake fragments are visible to the user
 

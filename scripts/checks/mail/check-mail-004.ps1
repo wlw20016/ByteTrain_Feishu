@@ -43,7 +43,7 @@ if (-not (Test-Path $screenPath)) {
         },
         @{
             Name = "Mail list renders mail card header"
-            Pattern = "text\s*=\s*`"Mail`""
+            Pattern = "text\s*=\s*`"邮箱`""
         }
     )
 

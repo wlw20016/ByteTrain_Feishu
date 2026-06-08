@@ -6,113 +6,60 @@ import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
-import com.bytetrain.feishuclone.shared.ui.BadgeModel
+import com.bytetrain.feishuclone.shared.list.PagingUiState
+import com.bytetrain.feishuclone.shared.ui.BadgeColors
+import com.bytetrain.feishuclone.shared.ui.BadgeRowStyle
+import com.bytetrain.feishuclone.shared.ui.SharedPagedListConfig
 import com.bytetrain.feishuclone.shared.ui.UnifiedListItem
+import com.bytetrain.feishuclone.shared.ui.createSharedBadgeRow
+import com.bytetrain.feishuclone.shared.ui.createSharedPagedListScreen
+import com.bytetrain.feishuclone.shared.ui.toColorIntOrNull
+import com.bytetrain.feishuclone.shared.ui.uiDp
 
 fun createMailListScreen(
     context: Context,
-    items: List<UnifiedListItem>,
+    state: PagingUiState<UnifiedListItem>,
     totalLabel: String,
-    hasMore: Boolean,
-    isLoadingMore: Boolean,
     initialScrollY: Int,
     onOpenDetail: (UnifiedListItem, Int) -> Unit,
     onLoadMore: (Int) -> Unit,
-): View {
-    val density = context.resources.displayMetrics.density
-
-    val scrollView = ScrollView(context).apply {
-        isFillViewport = true
-        addView(LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(density, 16), dp(density, 12), dp(density, 16), dp(density, 12))
-
-            addView(createHeader(context, density, totalLabel))
-
-            items.forEach { item ->
-                addView(createMailCard(context, density, item, onOpenDetail))
-            }
-
-            addView(createLoadMoreFooter(context, density, hasMore, isLoadingMore))
-        })
-
-        setOnScrollChangeListener { view, _, scrollY, _, _ ->
-            if (!hasMore || isLoadingMore) {
-                return@setOnScrollChangeListener
-            }
-
-            val child = (view as ScrollView).getChildAt(0) ?: return@setOnScrollChangeListener
-            val distanceToBottom = child.bottom - (view.height + scrollY)
-            if (distanceToBottom <= dp(density, 96)) {
-                onLoadMore(scrollY)
-            }
-        }
-    }
-
-    scrollView.restoreScrollBeforeDraw(initialScrollY)
-
-    return scrollView
-}
-
-private fun ScrollView.restoreScrollBeforeDraw(initialScrollY: Int) {
-    viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-        override fun onPreDraw(): Boolean {
-            if (viewTreeObserver.isAlive) {
-                viewTreeObserver.removeOnPreDrawListener(this)
-            }
-            scrollTo(0, initialScrollY)
-            return true
-        }
-    })
-}
-
-private fun createHeader(
-    context: Context,
-    density: Float,
-    totalLabel: String,
+    onRetryInitial: () -> Unit,
 ): View =
-    LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-        setPadding(0, 0, 0, dp(density, 12))
-
-        addView(TextView(context).apply {
-            text = "Mail"
-            textSize = 22f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(0xFF172033.toInt())
-        })
-
-        addView(TextView(context).apply {
-            text = totalLabel
-            textSize = 13f
-            setTextColor(0xFF6B7280.toInt())
-        })
-    }
+    createSharedPagedListScreen(
+        context = context,
+        state = state,
+        config = SharedPagedListConfig(
+            title = "邮箱",
+            totalLabel = totalLabel,
+            loadingText = "正在加载邮件...",
+            emptyText = "暂无邮件",
+            loadingMoreText = "正在加载更多邮件...",
+            loadMorePromptText = "上滑加载更多",
+            endText = "没有更多邮件",
+            titleTextColor = 0xFF172033.toInt(),
+            itemRenderer = ::createMailCard,
+        ),
+        initialScrollY = initialScrollY,
+        onOpenDetail = onOpenDetail,
+        onLoadMore = onLoadMore,
+        onRetryInitial = onRetryInitial,
+    )
 
 private fun createMailCard(
     context: Context,
     density: Float,
     item: UnifiedListItem,
-    onOpenDetail: (UnifiedListItem, Int) -> Unit,
 ): View =
     LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
-        setPadding(dp(density, 14), dp(density, 12), dp(density, 14), dp(density, 12))
-        isClickable = true
-        isFocusable = true
-        setOnClickListener {
-            val scrollY = parentScrollY()
-            onOpenDetail(item, scrollY)
-        }
+        setPadding(uiDp(density, 14), uiDp(density, 12), uiDp(density, 14), uiDp(density, 12))
         background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = dp(density, 8).toFloat()
+            cornerRadius = uiDp(density, 8).toFloat()
             setColor(0xFFFFFFFF.toInt())
-            setStroke(dp(density, 1), 0xFFE3E8EF.toInt())
+            setStroke(uiDp(density, 1), 0xFFE3E8EF.toInt())
         }
 
         addView(LinearLayout(context).apply {
@@ -120,13 +67,13 @@ private fun createMailCard(
             gravity = Gravity.CENTER_VERTICAL
 
             addView(createAvatar(context, density, item), LinearLayout.LayoutParams(
-                dp(density, 40),
-                dp(density, 40),
+                uiDp(density, 40),
+                uiDp(density, 40),
             ))
 
             addView(LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(dp(density, 10), 0, 0, 0)
+                setPadding(uiDp(density, 10), 0, 0, 0)
 
                 addView(TextView(context).apply {
                     text = item.title
@@ -157,27 +104,22 @@ private fun createMailCard(
         })
 
         if (item.badges.isNotEmpty()) {
-            addView(createBadgeRow(context, density, item.badges))
+            addView(createSharedBadgeRow(
+                context = context,
+                density = density,
+                badges = item.badges,
+                colorResolver = ::mailBadgeColors,
+                style = BadgeRowStyle(topPaddingDp = 10, horizontalPaddingDp = 7, verticalPaddingDp = 3),
+            ))
         }
     }.apply {
         layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
         ).apply {
-            bottomMargin = dp(density, 10)
+            bottomMargin = uiDp(density, 10)
         }
     }
-
-private fun View.parentScrollY(): Int {
-    var current = parent
-    while (current is View) {
-        if (current is ScrollView) {
-            return current.scrollY
-        }
-        current = current.parent
-    }
-    return 0
-}
 
 private fun createAvatar(
     context: Context,
@@ -192,95 +134,35 @@ private fun createAvatar(
         setTextColor(0xFFFFFFFF.toInt())
         background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = dp(density, 8).toFloat()
+            cornerRadius = uiDp(density, 8).toFloat()
             setColor(item.avatar.backgroundColor?.toColorIntOrNull() ?: 0xFF2D9CDB.toInt())
         }
-        minWidth = dp(density, 40)
-        minHeight = dp(density, 40)
+        minWidth = uiDp(density, 40)
+        minHeight = uiDp(density, 40)
     }
 
-private fun createBadgeRow(
-    context: Context,
-    density: Float,
-    badges: List<BadgeModel>,
-): View =
-    LinearLayout(context).apply {
-        orientation = LinearLayout.HORIZONTAL
-        setPadding(0, dp(density, 10), 0, 0)
-
-        badges.forEach { badge ->
-            addView(TextView(context).apply {
-                text = badge.text
-                textSize = 11f
-                setTextColor(badge.tone.badgeTextColor())
-                setPadding(dp(density, 7), dp(density, 3), dp(density, 7), dp(density, 3))
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    cornerRadius = dp(density, 8).toFloat()
-                    setColor(badge.tone.badgeBackgroundColor())
-                }
-            }, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                rightMargin = dp(density, 6)
-            })
-        }
-    }
-
-private fun createLoadMoreFooter(
-    context: Context,
-    density: Float,
-    hasMore: Boolean,
-    isLoadingMore: Boolean,
-): View =
-    LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-        gravity = Gravity.CENTER
-        setPadding(0, dp(density, 12), 0, dp(density, 8))
-
-        addView(TextView(context).apply {
-            text = when {
-                isLoadingMore -> "Loading more mail..."
-                hasMore -> "Pull up to load more"
-                else -> "No more mail"
-            }
-            textSize = 12f
-            gravity = Gravity.CENTER
-            setTextColor(0xFF8A94A6.toInt())
-        })
-    }
-
-private fun String.badgeBackgroundColor(): Int =
-    when (this) {
-        "unread" -> 0xFFFFE8E8.toInt()
-        "attachment" -> 0xFFE8F1FF.toInt()
-        "action" -> 0xFFEAF7ED.toInt()
-        "reminder" -> 0xFFFFF0DB.toInt()
-        "system" -> 0xFFE8F6FF.toInt()
-        "collaboration" -> 0xFFEAF7ED.toInt()
-        "report" -> 0xFFFFE8E8.toInt()
-        "update" -> 0xFFF1F3F5.toInt()
-        else -> 0xFFE5E7EB.toInt()
-    }
-
-private fun String.badgeTextColor(): Int =
-    when (this) {
-        "unread" -> 0xFFC92A2A.toInt()
-        "attachment" -> 0xFF2563EB.toInt()
-        "action" -> 0xFF1F7A3D.toInt()
-        "reminder" -> 0xFF9A5B00.toInt()
-        "system" -> 0xFF1B6B91.toInt()
-        "collaboration" -> 0xFF1F7A3D.toInt()
-        "report" -> 0xFFC92A2A.toInt()
-        "update" -> 0xFF4B5563.toInt()
-        else -> 0xFF374151.toInt()
-    }
-
-private fun String.toColorIntOrNull(): Int? =
-    removePrefix("#").toLongOrNull(16)?.let { value ->
-        (0xFF000000 or value).toInt()
-    }
-
-private fun dp(density: Float, value: Int): Int =
-    (value * density).toInt()
+private fun mailBadgeColors(tone: String): BadgeColors =
+    BadgeColors(
+        textColor = when (tone) {
+            "unread" -> 0xFFC92A2A.toInt()
+            "attachment" -> 0xFF2563EB.toInt()
+            "action" -> 0xFF1F7A3D.toInt()
+            "reminder" -> 0xFF9A5B00.toInt()
+            "system" -> 0xFF1B6B91.toInt()
+            "collaboration" -> 0xFF1F7A3D.toInt()
+            "report" -> 0xFFC92A2A.toInt()
+            "update" -> 0xFF4B5563.toInt()
+            else -> 0xFF374151.toInt()
+        },
+        backgroundColor = when (tone) {
+            "unread" -> 0xFFFFE8E8.toInt()
+            "attachment" -> 0xFFE8F1FF.toInt()
+            "action" -> 0xFFEAF7ED.toInt()
+            "reminder" -> 0xFFFFF0DB.toInt()
+            "system" -> 0xFFE8F6FF.toInt()
+            "collaboration" -> 0xFFEAF7ED.toInt()
+            "report" -> 0xFFFFE8E8.toInt()
+            "update" -> 0xFFF1F3F5.toInt()
+            else -> 0xFFE5E7EB.toInt()
+        },
+    )

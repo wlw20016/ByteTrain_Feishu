@@ -20,6 +20,7 @@ Bazel target：
 - `//features/mail:mapper`
 - `//features/mail:ui`
 - `//shared/navigation:navigation`
+- `//shared/ui:ui_android`
 - `//shared/ui:ui_models`
 
 BZL-FINAL query 证据：
@@ -39,7 +40,7 @@ Bazel target：
 - Message：`//features/message:domain`、`//features/message:data`、`//features/message:mapper`、`//features/message:ui`、`//features/message:message`
 - Mail：`//features/mail:domain`、`//features/mail:data`、`//features/mail:mapper`、`//features/mail:ui`、`//features/mail:mail`
 
-Feature target 允许依赖自身 domain/data/mapper/ui 分层，以及 shared UI model。Feature 不依赖 `//app:*`。
+Feature target 允许依赖自身 domain/data/mapper/ui 分层、shared list state、shared UI model 和 shared Android UI abstraction。Feature 不依赖 `//app:*`。
 
 ## Shared
 
@@ -49,9 +50,10 @@ Bazel target：
 
 - `//shared/list:list`
 - `//shared/navigation:navigation`
+- `//shared/ui:ui_android`
 - `//shared/ui:ui_models`
 
-Shared target 只提供跨 feature 复用模型和导航常量，不依赖 app 或具体 feature。
+Shared target 提供跨 feature 复用模型、Android View UI primitives、分页状态和导航常量，不依赖 app 或具体 feature。`//shared/ui:ui_android` owns the shared list shell, load-more footer, badge row, scroll restoration, dp/color helpers, and detail header/back affordance used by message and mail UI.
 
 ## Proto
 

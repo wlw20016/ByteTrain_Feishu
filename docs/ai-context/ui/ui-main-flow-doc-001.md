@@ -6,9 +6,9 @@ This document records the DOC-001 evidence for the `add-ui-main-flow` change.
 
 The UI main-flow work was driven by prompts in `openspec/prompt.md` and follow-up implementation requests in the development thread. The recurring user goals were:
 
-- Build a Feishu-like Android App with two tabs: Messages and Mail.
+- Build a Feishu-like Android App with two tabs: 消息 and 邮箱.
 - Provide 10000 mock records for both tabs.
-- Support cursor pagination, `Load more`, list rendering, detail navigation, and return-to-list behavior.
+- Support cursor pagination, scroll-to-load-more behavior, list rendering, detail navigation, and return-to-list behavior.
 - Reuse shared list/detail UI models across Messages and Mail.
 - Keep OpenSpec tasks updated with implementation, build, test, and manual acceptance evidence.
 - Use the temporary Gradle entry for first-stage Android UI verification while Bazel integration remains tracked separately.
@@ -20,7 +20,7 @@ The implementation followed these AI-assisted conclusions:
 - First-stage UI should use a temporary single `:app` Gradle module so Android screens can be compiled and accepted early.
 - Feature modules should keep independent domain models and map them into shared `UnifiedListItem` and `DetailModel` structures.
 - Pagination should be repository-driven through `loadPage(pageSize, cursor)` rather than rendering all 10000 records at once.
-- Message and Mail flows should use parallel structure: domain model, mock repository, mapper, list screen, detail screen, and verification scripts.
+- Message and mail flows should use parallel structure: domain model, mock repository, mapper, list screen, detail screen, and verification scripts.
 - Test evidence should be recorded as PowerShell checks and AI-readable Markdown matrices until full Kotlin/JUnit or Android UI test infrastructure is introduced.
 - SDK-backed repository adapters should sit behind repository interfaces, preserving the Kotlin mock repositories as fallback until native SDK integration is ready.
 
@@ -40,15 +40,17 @@ The human-directed decisions for this change were:
 
 The `add-ui-main-flow` change now delivers the first-stage Android UI main flow:
 
-- App shell with Messages and Mail tabs.
-- Message list, `Load more`, and detail page.
-- Mail list, `Load more`, and detail page.
+- App shell with 消息 and 邮箱 tabs.
+- Message list, scroll-to-load-more footer, and detail page.
+- Mail list, scroll-to-load-more footer, and detail page.
 - Shared `UnifiedListItem`, avatar, badge, display style, and detail models.
 - Message and Mail mock repositories with 10000 deterministic records and cursor pagination.
 - Mapper evidence for both feature models into shared UI models.
 - Repository paging evidence and UI state evidence.
 - 10000-record scroll-performance evidence.
 - Release acceptance evidence for the first UI main flow.
+
+Chinese UI text and review-facing docs are expected to stay UTF-8 encoded. Current acceptance should include `scripts/checks/docs/check-text-encoding.ps1` when UI labels, OpenSpec specs, or AI-context docs are edited.
 
 Primary verification commands:
 
@@ -57,6 +59,7 @@ Primary verification commands:
 openspec.cmd validate add-ui-main-flow --strict
 powershell -ExecutionPolicy Bypass -File .\scripts\checks\release\check-rel-001.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\checks\docs\check-doc-001.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\checks\docs\check-text-encoding.ps1
 ```
 
 Related evidence documents:

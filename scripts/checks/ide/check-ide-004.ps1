@@ -18,6 +18,8 @@ $scriptCommands = @(
     @{ Id = "bytetrain.bazelHelper.buildApp"; Title = "Bazel: Build App"; Target = "app"; Task = "Bazel: build app" },
     @{ Id = "bytetrain.bazelHelper.runApp"; Title = "Bazel: Run App"; Target = "run-app"; Task = "Bazel: run app" },
     @{ Id = "bytetrain.bazelHelper.assembleDebug"; Title = "Gradle: Assemble Debug"; Target = "gradle-app"; Task = "Gradle: assemble debug" },
+    @{ Id = "bytetrain.bazelHelper.prepareDebug"; Title = "Android Studio: Prepare Debug"; Target = "gradle-app"; Task = "Android Studio: prepare debug" },
+    @{ Id = "bytetrain.bazelHelper.prepareAndroidJdwpDebug"; Title = "VS Code: Prepare Android JDWP Debug"; Target = "android-jdwp-debug"; Task = "VS Code: prepare Android JDWP debug" },
     @{ Id = "bytetrain.bazelHelper.buildProto"; Title = "Bazel: Build Proto"; Target = "proto"; Task = "Bazel: build proto" },
     @{ Id = "bytetrain.bazelHelper.buildFeatures"; Title = "Bazel: Build Features"; Target = "features"; Task = "Bazel: build features" },
     @{ Id = "bytetrain.bazelHelper.testRustSdk"; Title = "Rust: Test SDK"; Target = "rust"; Task = "Rust: test SDK" },
@@ -26,6 +28,7 @@ $scriptCommands = @(
 
 $utilityCommands = @(
     @{ Id = "bytetrain.bazelHelper.copyDiagnosticContext"; Title = "Bazel: Copy Diagnostic Context" },
+    @{ Id = "bytetrain.bazelHelper.startAndroidJdwpDebug"; Title = "VS Code: Start Android JDWP Debug" },
     @{ Id = "bytetrain.bazelHelper.openBuildCommands"; Title = "Bazel: Open Build Commands" },
     @{ Id = "bytetrain.bazelHelper.openModuleBoundaries"; Title = "Bazel: Open Module Boundaries" },
     @{ Id = "bytetrain.bazelHelper.openCommonBuildErrors"; Title = "Bazel: Open Common Build Errors" }
@@ -35,7 +38,10 @@ $requiredExtensions = @(
     "fwcd.kotlin",
     "rust-lang.rust-analyzer",
     "BazelBuild.vscode-bazel",
-    "zxh404.vscode-proto3"
+    "zxh404.vscode-proto3",
+    "redhat.java",
+    "vscjava.vscode-java-debug",
+    "vscjava.vscode-gradle"
 )
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -66,6 +72,7 @@ function Read-Json {
 
 $extensionsText = Read-Text $paths.Extensions ".vscode/extensions.json"
 $settingsText = Read-Text $paths.Settings ".vscode/settings.json"
+$launchText = Read-Text $paths.Launch ".vscode/launch.json"
 $tasksText = Read-Text $paths.Tasks ".vscode/tasks.json"
 $manifestText = Read-Text $paths.Manifest "VS Code extension manifest"
 $extensionText = Read-Text $paths.Extension "VS Code extension entry"
@@ -75,6 +82,7 @@ $docText = Read-Text $paths.WorkflowDoc "IDE workflow document"
 
 $extensions = Read-Json $extensionsText ".vscode/extensions.json"
 $settings = Read-Json $settingsText ".vscode/settings.json"
+$launchJson = Read-Json $launchText ".vscode/launch.json"
 $tasksJson = Read-Json $tasksText ".vscode/tasks.json"
 $manifest = Read-Json $manifestText "VS Code extension manifest"
 $null = $settings
@@ -98,15 +106,21 @@ foreach ($term in @("BUILD.bazel", "MODULE.bazel", "*.bzl", "*.proto", "sdk/rust
     }
 }
 
-if (Test-Path $paths.Launch) {
+if ($null -ne $launchJson) {
+    $launchConfigs = @($launchJson.configurations)
+    $androidAttach = $launchConfigs | Where-Object {
+        $_.name -eq "Android: Attach ByteTrain App (JDWP)" -and
+        $_.type -eq "java" -and
+        $_.request -eq "attach" -and
+        $_.hostName -eq "localhost" -and
+        $_.port -eq 8700 -and
+        $_.preLaunchTask -eq "VS Code: prepare Android JDWP debug"
+    }
+    if ($null -eq $androidAttach) {
+        Add-Failure ".vscode/launch.json defines Android JDWP Java attach configuration"
+    }
     if ($docText -notmatch "VS Code Android debug") {
         Add-Failure "IDE workflow document explains VS Code debug when launch.json exists"
-    }
-} else {
-    foreach ($term in @("Android Studio fallback", "VS Code breakpoint")) {
-        if ($docText -notmatch [regex]::Escape($term)) {
-            Add-Failure "IDE workflow document records debug fallback term: $term"
-        }
     }
 }
 
@@ -182,8 +196,13 @@ if ($null -ne $tasksJson) {
 foreach ($term in @(
     "bytetrain.bazelHelper.copyDiagnosticContext",
     "bytetrain.bazelHelper.openBuildCommands",
+    "bytetrain.bazelHelper.prepareDebug",
+    "bytetrain.bazelHelper.prepareAndroidJdwpDebug",
+    "bytetrain.bazelHelper.startAndroidJdwpDebug",
     "Copy Diagnostic Context",
-    "Android Studio fallback",
+    "Android: Attach ByteTrain App (JDWP)",
+    "android-jdwp-debug",
+    "docs/evidence/vscode-android-debug-workflow.md",
     "Kotlin",
     "Rust",
     "Bazel/Starlark",

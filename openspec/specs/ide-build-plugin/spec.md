@@ -30,8 +30,6 @@ The project MUST document how Trae can use the same build entry points as VS Cod
 - **WHEN** a Trae user wants to run a project build
 - **THEN** the documentation identifies whether to use VS Code tasks, plugin commands, or direct `scripts/commands/ide-build.ps1` invocation
 
-
-
 ### Requirement: IDE configuration must recommend language tooling
 
 项目 MUST 提供入库 IDE 推荐配置，覆盖 Kotlin、Rust、Bazel/Starlark 和 proto 的代码导航与代码提示。
@@ -52,12 +50,22 @@ The project MUST document how Trae can use the same build entry points as VS Cod
 
 ### Requirement: IDE debug support must not be overstated
 
-项目 MUST 仅在存在入库 launch/attach 配置且文档已说明时，才宣称支持 VS Code/Trae breakpoint。
+The project MUST only claim VS Code/Trae breakpoint support when a checked-in, validated launch or attach workflow exists. If no validated VS Code/Trae workflow exists, the project MUST document Android Studio fallback as the supported breakpoint path.
 
-#### Scenario: Developer wants to use breakpoints
+#### Scenario: VS Code breakpoint workflow is supported
 
-- **WHEN** 开发者阅读 IDE workflow 文档
-- **THEN** 文档说明受支持的 breakpoint 路径，即 VS Code/Trae launch configuration 或 Android Studio fallback
+- Given a checked-in VS Code launch or attach configuration exists
+- When a developer follows the documented debug workflow on a connected device or emulator
+- Then the app launches or attaches successfully
+- And a breakpoint in app code can be hit
+- And the validation evidence records the device/emulator and command path used
+
+#### Scenario: VS Code breakpoint workflow is unavailable
+
+- Given VS Code Android attach tooling cannot be validated
+- When a developer reads the IDE workflow documentation
+- Then the documentation does not claim VS Code breakpoint support
+- And Android Studio fallback is documented as the supported breakpoint workflow
 
 ### Requirement: IDE plugin diagnostics must support AI troubleshooting
 

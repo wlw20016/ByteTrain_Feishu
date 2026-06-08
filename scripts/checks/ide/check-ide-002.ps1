@@ -6,7 +6,11 @@ $helperPath = Join-Path $root "scripts/commands/ide-build.ps1"
 $tasksJsonPath = Join-Path $root ".vscode/tasks.json"
 $gitignorePath = Join-Path $root ".gitignore"
 $docPath = Join-Path $root "docs/ai-context/build-system/ide-bazel-workflow.md"
-$tasksPath = Join-Path $root "openspec/changes/improve-ai-context/tasks.md"
+$tasksPathCandidates = @(
+    (Join-Path $root "openspec/changes/improve-ai-context/tasks.md"),
+    (Join-Path $root "openspec/changes/archive/2026-06-07-improve-ai-context/tasks.md")
+)
+$tasksPath = $tasksPathCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 $failures = New-Object System.Collections.Generic.List[string]
 
@@ -15,7 +19,7 @@ if (-not (Test-Path $helperPath)) {
 } else {
     $helper = Get-Content -Encoding UTF8 -Raw $helperPath
     foreach ($term in @(
-        'ValidateSet("app", "run-app", "gradle-app", "proto", "features", "rust", "query-app-deps")',
+        'ValidateSet("app", "run-app", "gradle-app", "android-jdwp-debug", "proto", "features", "rust", "query-app-deps")',
         'bazel',
         '//app:app',
         '//proto:...',
@@ -65,9 +69,9 @@ if (-not (Test-Path $gitignorePath)) {
     $failures.Add(".gitignore exists")
 } else {
     $gitignore = Get-Content -Encoding UTF8 -Raw $gitignorePath
-    foreach ($term in @(".vscode/", "!.vscode/", ".vscode/*", "!.vscode/tasks.json")) {
+    foreach ($term in @(".vscode/", "!.vscode/", ".vscode/*", "!.vscode/tasks.json", "!.vscode/launch.json")) {
         if ($gitignore -notmatch [regex]::Escape($term)) {
-            $failures.Add(".gitignore allows shared .vscode/tasks.json while ignoring personal VS Code files")
+            $failures.Add(".gitignore allows shared .vscode tasks/launch while ignoring personal VS Code files")
             break
         }
     }
@@ -94,7 +98,7 @@ if (-not (Test-Path $docPath)) {
     }
 }
 
-if (-not (Test-Path $tasksPath)) {
+if ([string]::IsNullOrWhiteSpace($tasksPath)) {
     $failures.Add("improve-ai-context tasks.md exists")
 } else {
     $tasks = Get-Content -Encoding UTF8 -Raw $tasksPath
