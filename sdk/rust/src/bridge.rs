@@ -284,12 +284,12 @@ pub(crate) struct JNINativeInterface {
     get_string_utf_length: *mut std::ffi::c_void,
     get_string_utf_chars: *mut std::ffi::c_void,
     release_string_utf_chars: *mut std::ffi::c_void,
-    get_array_length: unsafe extern "system" fn(*mut JNINativeInterface, jarray) -> jsize,
+    get_array_length: unsafe extern "system" fn(JNIEnv, jarray) -> jsize,
     new_object_array: *mut std::ffi::c_void,
     get_object_array_element: *mut std::ffi::c_void,
     set_object_array_element: *mut std::ffi::c_void,
     new_boolean_array: *mut std::ffi::c_void,
-    new_byte_array: unsafe extern "system" fn(*mut JNINativeInterface, jsize) -> jbyteArray,
+    new_byte_array: unsafe extern "system" fn(JNIEnv, jsize) -> jbyteArray,
     new_char_array: *mut std::ffi::c_void,
     new_short_array: *mut std::ffi::c_void,
     new_int_array: *mut std::ffi::c_void,
@@ -314,7 +314,7 @@ pub(crate) struct JNINativeInterface {
     release_double_array_elements: *mut std::ffi::c_void,
     get_boolean_array_region: *mut std::ffi::c_void,
     get_byte_array_region:
-        unsafe extern "system" fn(*mut JNINativeInterface, jbyteArray, jsize, jsize, *mut jbyte),
+        unsafe extern "system" fn(JNIEnv, jbyteArray, jsize, jsize, *mut jbyte),
     get_char_array_region: *mut std::ffi::c_void,
     get_short_array_region: *mut std::ffi::c_void,
     get_int_array_region: *mut std::ffi::c_void,
@@ -323,23 +323,27 @@ pub(crate) struct JNINativeInterface {
     get_double_array_region: *mut std::ffi::c_void,
     set_boolean_array_region: *mut std::ffi::c_void,
     set_byte_array_region:
-        unsafe extern "system" fn(*mut JNINativeInterface, jbyteArray, jsize, jsize, *const jbyte),
+        unsafe extern "system" fn(JNIEnv, jbyteArray, jsize, jsize, *const jbyte),
 }
 
-type JNIEnv = *mut JNINativeInterface;
+type JNIEnv = *mut *mut JNINativeInterface;
 
 unsafe fn read_jbyte_array(env: JNIEnv, request_bytes: jbyteArray) -> BridgeResult<Vec<u8>> {
     if env.is_null() || request_bytes.is_null() {
         return Err(BridgeError::native("JNI environment or request byte array was null"));
     }
+    let functions = *env;
+    if functions.is_null() {
+        return Err(BridgeError::native("JNI native function table was null"));
+    }
 
-    let len = ((*env).get_array_length)(env, request_bytes as jarray);
+    let len = ((*functions).get_array_length)(env, request_bytes as jarray);
     if len < 0 {
         return Err(BridgeError::native("JNI byte array length was negative"));
     }
 
     let mut output = vec![0u8; len as usize];
-    ((*env).get_byte_array_region)(
+    ((*functions).get_byte_array_region)(
         env,
         request_bytes,
         0,
@@ -353,15 +357,19 @@ unsafe fn write_jbyte_array(env: JNIEnv, payload: &[u8]) -> jbyteArray {
     if env.is_null() {
         return std::ptr::null_mut();
     }
+    let functions = *env;
+    if functions.is_null() {
+        return std::ptr::null_mut();
+    }
 
     let Ok(len) = jsize::try_from(payload.len()) else {
         return std::ptr::null_mut();
     };
-    let array = ((*env).new_byte_array)(env, len);
+    let array = ((*functions).new_byte_array)(env, len);
     if array.is_null() {
         return std::ptr::null_mut();
     }
-    ((*env).set_byte_array_region)(env, array, 0, len, payload.as_ptr() as *const jbyte);
+    ((*functions).set_byte_array_region)(env, array, 0, len, payload.as_ptr() as *const jbyte);
     array
 }
 
