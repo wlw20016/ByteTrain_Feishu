@@ -8,7 +8,6 @@
 
 - 仓库架构已初始化。
 - 模块边界已文档化。
-- 已为第一阶段项目建模创建 OpenSpec change。
 - AI Prompt 证据记录在 `openspec/prompt.md`。
 
 ## 交付原则
