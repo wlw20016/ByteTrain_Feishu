@@ -8,6 +8,9 @@ Thumbs.db
 # Logs
 *.log
 
+# Local visual brainstorming previews
+.superpowers/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ByteTrain Feishu | 工程化移动端实践</title>
+  <style>
+    :root {
+      --bg: #06080c;
+      --surface: #0d1118;
+      --surface-2: #121824;
+      --text: #f5f7fb;
+      --muted: #929bad;
+      --soft: #cbd2de;
+      --line: rgba(255,255,255,.12);
+      --line-strong: rgba(255,255,255,.2);
+      --blue: #1798ff;
+      --cyan: #42f0d1;
+      --lime: #b7ff5a;
+      --danger: #ff5f7a;
+      --shadow: 0 28px 90px rgba(0,0,0,.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 78% 8%, rgba(23,152,255,.22), transparent 28rem),
+        radial-gradient(circle at 88% 82%, rgba(183,255,90,.12), transparent 26rem),
+        radial-gradient(circle at 8% 46%, rgba(66,240,209,.12), transparent 26rem),
+        var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 3px;
+      width: 0;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--lime));
+      z-index: 20;
+    }
+
+    .shell {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 26px auto 54px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.016));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 74px 74px;
+      mask-image: radial-gradient(circle at 68% 20%, #000, transparent 68%);
+      pointer-events: none;
+    }
+
+    .nav {
+      height: 84px;
+      padding: 0 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 12;
+      background: rgba(7,9,14,.72);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .mark {
+      width: 38px;
+      height: 25px;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .mark span {
+      position: absolute;
+      top: 0;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+    }
+
+    .mark span:first-child { left: 0; background: linear-gradient(135deg, var(--cyan), #ecfff8); }
+    .mark span:last-child { right: 0; background: linear-gradient(135deg, var(--blue), #7df5ff); mix-blend-mode: screen; }
+
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      position: fixed;
+      left: max(24px, calc((100vw - 1180px) / 2 - 160px));
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 18;
+      width: 124px;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(13,17,24,.54), rgba(13,17,24,.28));
+      box-shadow: 0 22px 60px rgba(0,0,0,.34);
+      backdrop-filter: blur(18px) saturate(1.35);
+      -webkit-backdrop-filter: blur(18px) saturate(1.35);
+      color: #d9dfeb;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      min-height: 38px;
+      border-radius: 12px;
+      padding: 0 12px;
+      color: #dfe7f4;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.07);
+      transition: background .2s ease, color .2s ease, transform .2s ease, border-color .2s ease;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+      background: rgba(23,152,255,.2);
+      border-color: rgba(66,240,209,.28);
+      transform: translateX(3px);
+    }
+
+    .nav-cta {
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,.045);
+    }
+
+    .hero {
+      min-height: 650px;
+      display: grid;
+      grid-template-columns: .93fr 1.07fr;
+      gap: 22px;
+      padding: 54px 54px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan);
+    }
+
+    h1 {
+      margin: 24px 0 24px;
+      max-width: 640px;
+      font-family: "Inter Variable", Arial, sans-serif;
+      font-size: clamp(44px, 6vw, 82px);
+      line-height: .98;
+      font-weight: 850;
+    }
+
+    h1 span { color: rgba(255,255,255,.43); }
+
+    .lead {
+      max-width: 520px;
+      margin: 0 0 32px;
+      color: #aab2c2;
+      font-size: 16px;
+      line-height: 1.85;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 42px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      border-radius: 999px;
+      padding: 0 20px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .button.primary {
+      background: #168cff;
+      box-shadow: 0 18px 36px rgba(22,140,255,.26);
+    }
+
+    .button.secondary {
+      border: 1px solid var(--line-strong);
+      color: #dce3ef;
+      background: rgba(255,255,255,.045);
+    }
+
+    .hero-note {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hero-visual {
+      min-height: 520px;
+      position: relative;
+    }
+
+    .orbit {
+      position: absolute;
+      inset: 22px 12px 46px 0;
+      border: 3px solid transparent;
+      border-top-color: rgba(23,152,255,.72);
+      border-bottom-color: rgba(183,255,90,.5);
+      border-radius: 50%;
+      transform: rotate(-18deg) skew(-11deg);
+      opacity: .72;
+    }
+
+    .phone {
+      position: absolute;
+      left: 44px;
+      top: 18px;
+      width: 284px;
+      height: 440px;
+      border-radius: 34px;
+      background: linear-gradient(150deg, #232938, #080b10 74%);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 35px 80px rgba(0,0,0,.6);
+      transform: rotate(-9deg);
+      overflow: hidden;
+    }
+
+    .phone::before {
+      content: "";
+      display: block;
+      width: 76px;
+      height: 5px;
+      margin: 16px auto 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.24);
+    }
+
+    .appbar {
+      padding: 0 22px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 0 20px 14px;
+    }
+
+    .tab {
+      flex: 1;
+      border-radius: 999px;
+      padding: 8px 0;
+      text-align: center;
+      background: rgba(255,255,255,.07);
+      color: #aeb7c8;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tab.active { background: var(--blue); color: #fff; }
+
+    .list {
+      display: grid;
+      gap: 12px;
+      padding: 0 20px;
+    }
+
+    .row {
+      min-height: 58px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      display: grid;
+      grid-template-columns: 38px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+    }
+
+    .line-a, .line-b {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.68);
+      margin: 6px 0;
+    }
+
+    .line-b { width: 68%; background: rgba(255,255,255,.24); }
+
+    .badge-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 16px rgba(183,255,90,.75);
+    }
+
+    .module-card {
+      position: absolute;
+      right: 20px;
+      top: 156px;
+      width: 392px;
+      padding: 22px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(30,38,50,.96), rgba(10,13,19,.96));
+      box-shadow: 0 30px 80px rgba(0,0,0,.56);
+      transform: rotate(7deg);
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 7px 11px;
+      color: #071018;
+      background: var(--cyan);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .chip:nth-child(2) { background: var(--blue); color: #fff; }
+    .chip:nth-child(3) { background: var(--lime); }
+
+    code, pre {
+      font-family: Consolas, "Cascadia Code", monospace;
+    }
+
+    .module-card code {
+      display: block;
+      color: #c9f5e9;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.8;
+      white-space: nowrap;
+    }
+
+    .graph {
+      position: absolute;
+      right: 190px;
+      bottom: 28px;
+      width: 250px;
+      height: 160px;
+      transform: rotate(-4deg);
+    }
+
+    .node {
+      position: absolute;
+      min-width: 74px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.07);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .node.app { left: 82px; top: 0; background: rgba(23,152,255,.2); }
+    .node.features { left: 0; top: 76px; }
+    .node.shared { right: 0; top: 76px; }
+    .node.sdk { left: 86px; bottom: 0; background: rgba(66,240,209,.14); }
+
+    .graph svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .spark {
+      position: absolute;
+      color: #fff;
+      filter: drop-shadow(0 0 16px rgba(255,255,255,.5));
+      font-size: 34px;
+      z-index: 3;
+    }
+
+    .spark.one { right: 74px; top: 118px; }
+    .spark.two { left: 34px; top: 330px; font-size: 22px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      padding: 26px 54px 56px;
+      position: relative;
+      z-index: 4;
+    }
+
+    .stat {
+      min-height: 98px;
+      display: grid;
+      grid-template-rows: auto auto;
+      align-content: start;
+      border-top: 1px solid rgba(255,255,255,.12);
+      padding-top: 20px;
+    }
+
+    .stat strong {
+      margin-bottom: 10px;
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+      max-width: 190px;
+    }
+
+    .section {
+      position: relative;
+      z-index: 2;
+      padding: 78px 54px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .section.compact { padding-top: 58px; }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: .75fr 1fr;
+      gap: 34px;
+      align-items: end;
+      margin-bottom: 34px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 54px);
+      line-height: 1.06;
+      font-weight: 850;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: #a8b1c2;
+      line-height: 1.8;
+    }
+
+    .grid-2, .grid-3, .grid-4 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .grid-2 > *, .grid-3 > *, .grid-4 > * {
+      min-width: 0;
+    }
+
+    .card {
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 8px;
+      background: linear-gradient(150deg, rgba(255,255,255,.062), rgba(255,255,255,.025));
+      padding: 22px;
+      min-height: 180px;
+      min-width: 0;
+    }
+
+    .card.featured {
+      background:
+        linear-gradient(150deg, rgba(23,152,255,.15), rgba(255,255,255,.032)),
+        rgba(255,255,255,.03);
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 21px;
+      line-height: 1.25;
+    }
+
+    .card p {
+      margin: 0;
+      color: #aab2c2;
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .meta::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .codebox {
+      margin-top: 18px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px;
+      background: rgba(0,0,0,.22);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .codebox pre {
+      margin: 0;
+      padding: 16px;
+      color: #cdeee6;
+      font-size: 12px;
+      line-height: 1.65;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .phase {
+      min-height: 390px;
+      padding: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(145deg, rgba(255,255,255,.062), rgba(255,255,255,.022));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phase::after {
+      content: attr(data-step);
+      position: absolute;
+      right: 20px;
+      top: 8px;
+      color: rgba(255,255,255,.06);
+      font-size: 118px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .phase ul, .runbook ol {
+      margin: 18px 0 0;
+      padding-left: 18px;
+      color: #b8c1d0;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px 28px;
+      margin-top: 22px;
+      counter-reset: flow-step;
+    }
+
+    .flow span {
+      position: relative;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 8px;
+      background: rgba(255,255,255,.05);
+      padding: 14px 14px 14px 44px;
+      color: #dce3ef;
+      font-size: 13px;
+      font-weight: 760;
+      text-align: left;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+    }
+
+    .flow span::before {
+      counter-increment: flow-step;
+      content: counter(flow-step);
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 18px rgba(23,152,255,.4);
+      z-index: 2;
+    }
+
+    .flow span::after {
+      content: "";
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      width: 28px;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(66,240,209,.7), rgba(66,240,209,.12));
+    }
+
+    .flow span:nth-child(4)::after,
+    .flow span:nth-child(8)::after {
+      display: none;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .map-card {
+      min-height: 320px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-lines {
+      margin-top: 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .map-line {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 12px;
+      align-items: center;
+      color: #dce3ef;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      border-radius: 999px;
+      padding: 0 12px;
+      background: rgba(23,152,255,.16);
+      color: #cae8ff;
+      border: 1px solid rgba(23,152,255,.28);
+      white-space: nowrap;
+    }
+
+    .arrow {
+      color: var(--muted);
+    }
+
+    .formula {
+      display: grid;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .formula div {
+      padding: 14px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.045);
+      color: #dce3ef;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .runbook {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .command-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .command {
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(0,0,0,.24);
+      padding: 15px;
+      color: #cdeee6;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    .footer {
+      padding: 34px 54px 46px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer strong { color: #fff; }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .team-card {
+      min-height: 360px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      background:
+        linear-gradient(150deg, rgba(23,152,255,.11), rgba(255,255,255,.026)),
+        rgba(255,255,255,.025);
+      overflow: hidden;
+    }
+
+    .member-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 24px;
+      border-bottom: 1px solid rgba(255,255,255,.09);
+    }
+
+    .member-name {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .member-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: #fff;
+      font-weight: 900;
+      box-shadow: 0 16px 34px rgba(23,152,255,.22);
+    }
+
+    .member-name h3 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .member-name span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .role-pill {
+      border: 1px solid rgba(66,240,209,.28);
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--cyan);
+      background: rgba(66,240,209,.08);
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .member-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid rgba(255,255,255,.04);
+    }
+
+    .member-field {
+      padding: 18px 20px;
+      border-right: 1px solid rgba(255,255,255,.07);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      min-height: 104px;
+    }
+
+    .member-field:nth-child(2n) {
+      border-right: 0;
+    }
+
+    .member-field.full {
+      grid-column: 1 / -1;
+      border-right: 0;
+    }
+
+    .member-field b {
+      display: block;
+      margin-bottom: 9px;
+      color: #f4f7fb;
+      font-size: 13px;
+    }
+
+    .member-field span {
+      display: block;
+      color: #aeb7c8;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    @media (max-width: 1200px) {
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 981px) and (max-width: 1320px) {
+      .shell {
+        width: min(980px, calc(100vw - 170px));
+        margin-left: 150px;
+        margin-right: auto;
+      }
+
+      .nav-links {
+        left: 18px;
+        width: 112px;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .shell { width: min(100vw - 24px, 760px); margin-top: 12px; border-radius: 20px; }
+      .nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 36px 24px 0; }
+      .hero-visual { min-height: 560px; }
+      .phone { left: 4px; }
+      .module-card { right: 0; top: 174px; width: min(370px, 90vw); }
+      .graph { right: 54px; bottom: 16px; }
+      .stats { grid-template-columns: repeat(2, 1fr); padding: 20px 24px 42px; }
+      .section { padding: 58px 24px; }
+      .section-head, .timeline, .architecture, .runbook { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: repeat(2, 1fr); }
+      .flow span:nth-child(2n)::after { display: none; }
+      .footer { padding: 30px 24px 40px; flex-direction: column; }
+    }
+
+    @media (max-width: 560px) {
+      .shell { width: 100%; margin: 0; border-radius: 0; border-left: 0; border-right: 0; }
+      .nav { height: 72px; }
+      .brand { font-size: 14px; }
+      .nav-cta { display: none; }
+      .hero { padding-top: 28px; }
+      .lead { font-size: 15px; }
+      .hero-visual { min-height: 620px; }
+      .phone { width: 250px; height: 396px; }
+      .module-card { top: 314px; transform: rotate(0deg); }
+      .graph { display: none; }
+      .flow { grid-template-columns: 1fr; }
+      .flow span::after { display: none; }
+      .member-head { align-items: flex-start; flex-direction: column; }
+      .member-details { grid-template-columns: 1fr; }
+      .member-field { border-right: 0; }
+      .map-line { grid-template-columns: 1fr; }
+      h1 { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <main class="shell">
+    <nav class="nav">
+      <a class="brand" href="#top" aria-label="ByteTrain Feishu">
+        <span class="mark"><span></span><span></span></span>
+        <span>ByteTrain Feishu</span>
+      </a>
+      <a class="nav-cta" href="#demo">Defense Runbook</a>
+    </nav>
+
+    <div class="nav-links" aria-label="Section navigation">
+      <a href="#product">Product</a>
+      <a href="#engineering">Engineering</a>
+      <a href="#android">Android</a>
+      <a href="#demo">Demo</a>
+    </div>
+
+    <section class="hero" id="top">
+      <div>
+        <div class="eyebrow">Android · Bazel · AI Context</div>
+        <h1>工程化的飞书风格 <span>移动端实践</span></h1>
+        <p class="lead">ByteTrain Feishu 不只是一个能运行的 Android App。它把消息、邮箱、10000 条数据分页、模块边界、构建系统、VSCode 协作和 AI 辅助诊断整理成一套可展示、可验证、可追踪的工程流程。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#product">查看产品能力</a>
+          <a class="button secondary" href="#engineering">工程化亮点</a>
+          <span class="hero-note">OpenSpec 驱动 · Bazel 验证 · IDE 集成</span>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="orbit"></div>
+        <div class="phone">
+          <div class="appbar"><span>Messages</span><span>Mail</span></div>
+          <div class="tabs"><span class="tab active">Messages</span><span class="tab">Mail</span></div>
+          <div class="list">
+            <div class="row"><div class="avatar"></div><div><div class="line-a"></div><div class="line-b"></div></div><div class="badge-dot"></div></div>
+            <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#b7ff5a,#42f0d1)"></div><div><div class="line-a"></div><div class="line-b"></div></div><div></div></div>
+            <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#7c8bff,#42f0d1)"></div><div><div class="line-a"></div><div class="line-b"></div></div><div class="badge-dot"></div></div>
+            <div class="row"><div class="avatar"></div><div><div class="line-a"></div><div class="line-b"></div></div><div></div></div>
+            <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#1798ff,#b7ff5a)"></div><div><div class="line-a"></div><div class="line-b"></div></div><div></div></div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="chip-row"><span class="chip">Bazel</span><span class="chip">10k paging</span><span class="chip">AI-ready</span></div>
+          <code>&gt; bazel build //app:app</code>
+          <code>&gt; bazel query deps(...)</code>
+          <code>&gt; rust sdk tests passed</code>
+        </div>
+        <div class="graph">
+          <svg viewBox="0 0 250 160">
+            <path d="M125 32 L45 84 M125 32 L196 84 M45 104 L126 128 M196 104 L126 128" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2"/>
+          </svg>
+          <div class="node app">app</div>
+          <div class="node features">features</div>
+          <div class="node shared">shared</div>
+          <div class="node sdk">sdk</div>
+        </div>
+      </div>
+      <div class="spark one">✦</div>
+      <div class="spark two">✦</div>
+    </section>
+
+    <section class="stats" aria-label="关键指标">
+      <div class="stat"><strong>10k</strong><span>Messages 与 Mail 数据分页展示</span></div>
+      <div class="stat"><strong>2</strong><span>消息和邮箱两条核心移动端链路</span></div>
+      <div class="stat"><strong>5+</strong><span>app、features、shared、proto、Rust SDK 模块</span></div>
+      <div class="stat"><strong>AI</strong><span>构建命令、模块边界、错误文档可消费</span></div>
+    </section>
+
+    <section class="section" id="product">
+      <div class="section-head">
+        <h2>产品先跑起来，再把工程做扎实</h2>
+        <p>项目演进分成两个阶段：先用 Android + Gradle 快速验证产品形态和 UI 链路，再用 Bazel、OpenSpec、VSCode 插件和 AI 诊断上下文把项目推进到可管理、可验证、可诊断。</p>
+      </div>
+      <div class="timeline">
+        <article class="phase" data-step="01">
+          <div class="meta">Android + Gradle</div>
+          <h3>快速成型阶段</h3>
+          <p>完成 Android App 入口、Messages 和 Mail 底部 Tab、列表与详情页面，以及 10000 条 mock/runtime 数据的分页展示。</p>
+          <ul>
+            <li>消息列表、消息详情、邮箱列表、邮箱详情</li>
+            <li>滚动到底部附近触发分页加载</li>
+            <li>Gradle 构建 debug APK 便于预览验证</li>
+          </ul>
+          <div class="codebox"><pre>.\gradlew.bat :app:assembleDebug</pre></div>
+        </article>
+        <article class="phase" data-step="02">
+          <div class="meta">Bazel + VSCode</div>
+          <h3>工程化阶段</h3>
+          <p>把可运行 App 转换为可追踪、可验证、可被 AI 辅助诊断的工程系统，明确模块边界并沉淀诊断上下文。</p>
+          <ul>
+            <li>Bazel 管理 app、features、shared、proto、Rust SDK</li>
+            <li>支持 build、run、test、query</li>
+            <li>VSCode 插件统一调用 IDE 构建入口</li>
+          </ul>
+          <div class="codebox"><pre>bazel --batch build //app:app --curses=no --jobs=4</pre></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section compact">
+      <div class="section-head">
+        <h2>移动端主流程</h2>
+        <p>答辩现场可以沿着真实用户路径展示：进入 App、浏览 Messages、滚动分页、进入详情，再切换到 Mail 完成同样的列表和详情流程。</p>
+      </div>
+      <div class="flow">
+        <span>打开 App</span>
+        <span>Messages 列表</span>
+        <span>滚动分页</span>
+        <span>消息详情</span>
+        <span>切换 Mail</span>
+        <span>邮箱列表</span>
+        <span>邮箱分页</span>
+        <span>邮件详情</span>
+      </div>
+    </section>
+
+    <section class="section" id="engineering">
+      <div class="section-head">
+        <h2>三条最适合讲清楚的项目亮点</h2>
+        <p>这三个亮点把项目从普通 App 展示拉到工程实践展示：需求过程可审计、模块边界可验证、失败诊断有上下文。</p>
+      </div>
+      <div class="grid-3">
+        <article class="card featured">
+          <div class="meta">OpenSpec</div>
+          <h3>需求、设计和验收闭环</h3>
+          <p>每个重要变化先明确 proposal、design、tasks，再进入实现和验收。AI 不是只写代码，而是在 OpenSpec 约束下参与需求拆解、设计实现、任务推进和证据归档。</p>
+          <div class="codebox"><pre>openspec/project.md
+openspec/specs/
+openspec/changes/archive/
+docs/evidence/</pre></div>
+        </article>
+        <article class="card">
+          <div class="meta">Bazel</div>
+          <h3>模块、依赖、构建和测试</h3>
+          <p>Bazel 把项目结构从“目录看起来像模块”变成“构建系统真正知道模块”，并通过 query 验证 app、feature、shared 之间的边界。</p>
+          <div class="codebox"><pre>MODULE.bazel
+app/BUILD.bazel
+features/message/BUILD.bazel
+shared/BUILD.bazel</pre></div>
+        </article>
+        <article class="card">
+          <div class="meta">IDE + AI</div>
+          <h3>VSCode 插件和诊断上下文</h3>
+          <p>插件把构建、运行、测试、query 和诊断上下文接入 IDE。构建失败时，AI 可以基于真实命令、退出码、日志和文档定位问题。</p>
+          <div class="codebox"><pre>tools/vscode-bazel-helper/
+scripts/commands/ide-build.ps1
+docs/ai-context/build-system/</pre></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="android">
+      <div class="section-head">
+        <h2>Android 核心实现：复用展示，不混淆业务</h2>
+        <p>消息和邮箱在领域模型上保持独立，但 UI 层统一映射为 `UnifiedListItem`。这样既保留业务语义，又减少列表和详情页面的重复展示逻辑。</p>
+      </div>
+      <div class="architecture">
+        <article class="card map-card">
+          <div class="meta">Unified UI Model</div>
+          <h3>业务模型映射为统一展示模型</h3>
+          <div class="map-lines">
+            <div class="map-line"><span class="pill">MessageItem</span><span class="arrow">MessageUiMapper → UnifiedListItem → 消息列表 / 详情</span></div>
+            <div class="map-line"><span class="pill">MailItem</span><span class="arrow">MailUiMapper → UnifiedListItem → 邮箱列表 / 详情</span></div>
+          </div>
+          <div class="codebox"><pre>displayStyle = DENSE_CONVERSATION
+displayStyle = MAIL_CARD
+badges + detail 共享展示结构</pre></div>
+        </article>
+        <article class="card map-card">
+          <div class="meta">Pagination</div>
+          <h3>10000 条数据分页与性能优化</h3>
+          <p>采用 cursor 分页 + 屏幕可见数量分页。分页大小不是写死，而是根据列表区域高度和预估 item 高度动态计算，并增加少量预加载缓冲。</p>
+          <div class="formula">
+            <div>Messages：按 `64dp` 预估消息行高计算可见行数</div>
+            <div>Mail：按 `92dp` 预估邮箱卡片高计算可见卡片数</div>
+            <div>page size = 可见数量 + 2 条预加载，最终限制在 `1..200`</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>工程化展示</h2>
+        <p>这一部分聚焦 Bazel 工程化、Rust SDK + Protobuf、VSCode 插件，以及 ByteTrain Bazel 构建故障诊断 Skill，适合放在 landing page 的工程能力板块。</p>
+      </div>
+      <div class="grid-4">
+        <article class="card">
+          <div class="meta">01</div>
+          <h3>Bazel 工程化</h3>
+          <p>用 Bazel 把项目从“目录上像模块”升级为“构建系统真正识别模块”。</p>
+          <div class="codebox"><pre>bazel --batch query --notool_deps --noimplicit_deps --output=label_kind "deps(//app:app, 2)"</pre></div>
+        </article>
+        <article class="card">
+          <div class="meta">02</div>
+          <h3>Rust SDK + Protobuf</h3>
+          <p>把分页数据、协议边界和测试闭环独立出来，支持 cursor、异步读取、protobuf 编解码测试。</p>
+          <div class="codebox"><pre>sdk/rust/src/paging.rs
+proto/message.proto
+proto/mail.proto</pre></div>
+        </article>
+        <article class="card">
+          <div class="meta">03</div>
+          <h3>VSCode 插件集成</h3>
+          <p>把 Bazel 构建、运行、测试、query 和诊断上下文接入 IDE，统一调用 `ide-build.ps1`。</p>
+          <div class="codebox"><pre>Bazel: Build App
+Bazel: Run App
+Rust: Test SDK
+Bazel: Query App Deps</pre></div>
+        </article>
+        <article class="card">
+          <div class="meta">04</div>
+          <h3>AI 构建诊断 Skill</h3>
+          <p>先复现、分类、定位根因，再做最小修改，并用 Bazel 证据闭环。</p>
+          <div class="codebox"><pre>捕获故障 → 匹配已知问题
+分类根因 → 验证假设
+最小修复 → 证据闭环</pre></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="team">
+      <div class="section-head">
+        <h2>团队信息</h2>
+        <p>团队由两位成员完成：一位负责底层服务、Bazel 工程化与 AI IDE 协作，一位负责项目框架、OpenSpec 搭建、Android 页面实现与功能优化。</p>
+      </div>
+      <div class="team-grid">
+        <article class="team-card">
+          <div class="member-head">
+            <div class="member-name">
+              <div class="member-avatar">蒋</div>
+              <div>
+                <h3>蒋逸然</h3>
+                <span>河海大学 · 计算机与科学技术 · 本科 · 2027.6</span>
+              </div>
+            </div>
+            <div class="role-pill">队长</div>
+          </div>
+          <div class="member-details">
+            <div class="member-field full">
+              <b>项目负责工作</b>
+              <span>底层服务，Bazel 工程化，AI IDE 协作。</span>
+            </div>
+            <div class="member-field">
+              <b>GitHub 用户名</b>
+              <span>zcyahead</span>
+            </div>
+            <div class="member-field">
+              <b>实习信息</b>
+              <span>均可 / 一周内 / 6 个月</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="team-card">
+          <div class="member-head">
+            <div class="member-name">
+              <div class="member-avatar" style="background:linear-gradient(135deg,var(--lime),var(--cyan));">吴</div>
+              <div>
+                <h3>吴隆伟</h3>
+                <span>重庆邮电大学 · 人工智能专业 · 硕士 · 2027.6 毕业</span>
+              </div>
+            </div>
+            <div class="role-pill">成员</div>
+          </div>
+          <div class="member-details">
+            <div class="member-field full">
+              <b>项目负责工作</b>
+              <span>项目框架初始搭建，OpenSpec 搭建，Android 页面实现及功能优化。</span>
+            </div>
+            <div class="member-field">
+              <b>GitHub 用户名</b>
+              <span>wlw20016</span>
+            </div>
+            <div class="member-field">
+              <b>实习信息</b>
+              <span>全国 / 7.1 / 3 个月</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="demo">
+      <div class="section-head">
+        <h2>现场演示 Runbook</h2>
+        <p>页面最后保留一份清晰的答辩演示顺序，既可以作为 landing page 内容，也可以作为现场讲解提词器。</p>
+      </div>
+      <div class="runbook">
+        <article class="card">
+          <div class="meta">Demo Flow</div>
+          <h3>建议展示顺序</h3>
+          <ol>
+            <li>介绍项目目标：飞书风格移动端工程实践。</li>
+            <li>展示 App：Messages、Mail、分页、详情页。</li>
+            <li>展示 Bazel 构建和依赖 query。</li>
+            <li>展示 Rust SDK 测试。</li>
+            <li>展示 VSCode 插件和 AI 诊断文档。</li>
+          </ol>
+        </article>
+        <div class="command-stack">
+          <div class="command">.\gradlew.bat :app:assembleDebug</div>
+          <div class="command">bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4</div>
+          <div class="command">bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"</div>
+          <div class="command">bazel --batch test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=4</div>
+          <div class="command">powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\commands\ide-build.ps1 -Target app</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div><strong>ByteTrain Feishu</strong><br />飞书风格 Android 移动端工程实践项目</div>
+      <div>内容来源：`C:\Users\24155\Desktop\答辩\答辩文案(1).md`<br />交付页面：`landing-page/index.html`</div>
+    </footer>
+  </main>
+
+  <script>
+    const bar = document.getElementById("progress");
+    const updateProgress = () => {
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = height <= 0 ? 0 : (window.scrollY / height) * 100;
+      bar.style.width = `${progress}%`;
+    };
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    updateProgress();
+  </script>
+</body>
+</html>
