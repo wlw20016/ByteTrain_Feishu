@@ -1,0 +1,96 @@
+name: Bazel remote cache
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: bazel-remote-cache-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-upload-cache:
+    name: Build and upload remote cache
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    env:
+      BAZEL_SH: C:/Program Files/Git/bin/bash.exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          repository-cache: true
+
+      - name: Configure Android SDK
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $sdkRoot = $env:ANDROID_HOME
+          if (-not $sdkRoot) {
+            $sdkRoot = $env:ANDROID_SDK_ROOT
+          }
+          if (-not $sdkRoot) {
+            throw "ANDROID_HOME or ANDROID_SDK_ROOT must be available on the runner."
+          }
+
+          $sdkManager = Join-Path $sdkRoot "cmdline-tools/latest/bin/sdkmanager.bat"
+          if (-not (Test-Path $sdkManager)) {
+            throw "sdkmanager was not found at $sdkManager."
+          }
+
+          for ($i = 0; $i -lt 100; $i++) { "y" } | & $sdkManager --licenses
+          & $sdkManager "platform-tools" "platforms;android-36.1" "build-tools;36.1.0"
+          "ANDROID_HOME=$sdkRoot" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "ANDROID_SDK_ROOT=$sdkRoot" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Check remote cache connectivity
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $result = Test-NetConnection -ComputerName 159.75.170.170 -Port 9090
+          if (-not $result.TcpTestSucceeded) {
+            throw "Remote cache 159.75.170.170:9090 is not reachable from GitHub Actions."
+          }
+
+      - name: Warm remote cache with shared target
+        shell: pwsh
+        run: |
+          bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci build //shared/navigation:navigation `
+            --curses=no `
+            --show_progress_rate_limit=60 `
+            --jobs=2 `
+            --shell_executable=C:/Progra~1/Git/bin/bash.exe
+
+      - name: Build Android app and upload cache
+        shell: pwsh
+        run: |
+          bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci build //app:app `
+            --curses=no `
+            --show_progress_rate_limit=60 `
+            --jobs=2 `
+            --worker_max_instances=Desugar=1 `
+            --shell_executable=C:/Progra~1/Git/bin/bash.exe
+
+      - name: Test Rust SDK and upload cache
+        shell: pwsh
+        run: |
+          bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci test //sdk/rust:bytetrain_feed_sdk_test `
+            --curses=no `
+            --show_progress_rate_limit=60 `
+            --jobs=2 `
+            --shell_executable=C:/Progra~1/Git/bin/bash.exe

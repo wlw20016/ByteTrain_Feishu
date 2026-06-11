@@ -106,14 +106,15 @@ build --remote_upload_local_results=false
 test --remote_upload_local_results=false
 ```
 
-CI 使用已提交的 `.bazelrc.ci` 写入远端缓存：
+CI 使用已提交的 `.bazelrc.ci` 写入远端缓存，并由 GitHub Actions workflow `.github/workflows/remote-cache.yml` 执行：
 
 ```powershell
-bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci build //app:app --curses=no --show_progress_rate_limit=60
-bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci test //... --curses=no --show_progress_rate_limit=60
+bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci build //shared/navigation:navigation --curses=no --show_progress_rate_limit=60 --jobs=2
+bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci build //app:app --curses=no --show_progress_rate_limit=60 --jobs=2
+bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci test //sdk/rust:bytetrain_feed_sdk_test --curses=no --show_progress_rate_limit=60 --jobs=2
 ```
 
-若 CI 所在机器还需要本机 SDK、镜像或 shell 路径配置，应额外提供 CI 环境专用 bazelrc 或命令行参数；不要复用开发机的 `.bazelrc.local`。
+该 workflow 在 Windows runner 上配置 JDK 17、Bazel、Android SDK `platforms;android-36.1`/`build-tools;36.1.0`，先检查 `159.75.170.170:9090` 可达，再执行上述 build/test。CI 命令通过 `--shell_executable=C:/Progra~1/Git/bin/bash.exe` 指定 Git Bash；不要复用开发机的 `.bazelrc.local`。
 
 ## 最终 Bazel 交付验证
 
