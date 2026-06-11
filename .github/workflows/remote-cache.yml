@@ -53,7 +53,9 @@ jobs:
             throw "sdkmanager was not found at $sdkManager."
           }
 
-          for ($i = 0; $i -lt 100; $i++) { "y" } | & $sdkManager --licenses
+          $acceptFile = Join-Path $env:RUNNER_TEMP "android-sdk-licenses.txt"
+          1..100 | ForEach-Object { "y" } | Set-Content -Path $acceptFile -Encoding ascii
+          cmd.exe /c "`"$sdkManager`" --licenses < `"$acceptFile`""
           & $sdkManager "platform-tools" "platforms;android-36.1" "build-tools;36.1.0"
           "ANDROID_HOME=$sdkRoot" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "ANDROID_SDK_ROOT=$sdkRoot" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
