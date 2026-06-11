@@ -10,3 +10,10 @@
 # Optional: Go proxy settings for restricted networks.
 # common --repo_env=GOPROXY=https://goproxy.cn,https://proxy.golang.org,direct
 # common --repo_env=GOSUMDB=sum.golang.google.cn
+
+# Optional: consume the shared remote cache from a local developer machine.
+# Keep local uploads disabled; CI is responsible for writing cache entries.
+# build --remote_cache=http://159.75.170.170:9090
+# test --remote_cache=http://159.75.170.170:9090
+# build --remote_upload_local_results=false
+# test --remote_upload_local_results=false

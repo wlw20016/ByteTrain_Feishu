@@ -93,6 +93,28 @@ bazel --batch build //app:app --curses=no --show_progress_rate_limit=60 --jobs=4
 bazel --batch query --notool_deps --noimplicit_deps --output=label_kind --curses=no "deps(//app:app, 2)"
 ```
 
+## Remote cache 策略
+
+2026-06-11 约定：本地开发/操作机只读取共享 remote cache，不上传本地产物；CI 作为唯一写入方负责上传验证后的构建和测试结果。
+
+本地机器配置放在不提交的 `.bazelrc.local` 中，推荐保持：
+
+```bazelrc
+build --remote_cache=http://159.75.170.170:9090
+test --remote_cache=http://159.75.170.170:9090
+build --remote_upload_local_results=false
+test --remote_upload_local_results=false
+```
+
+CI 使用已提交的 `.bazelrc.ci` 写入远端缓存：
+
+```powershell
+bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci build //app:app --curses=no --show_progress_rate_limit=60
+bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci test //... --curses=no --show_progress_rate_limit=60
+```
+
+若 CI 所在机器还需要本机 SDK、镜像或 shell 路径配置，应额外提供 CI 环境专用 bazelrc 或命令行参数；不要复用开发机的 `.bazelrc.local`。
+
 ## 最终 Bazel 交付验证
 
 BZL-FINAL 记录日期：2026-06-05。

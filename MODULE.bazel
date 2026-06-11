@@ -18,6 +18,7 @@ maven.install(
         "rules_android",
     ],
     repositories = [
+        "https://mirrors.cloud.tencent.com/nexus/repository/maven-public",
         "https://maven.aliyun.com/repository/google",
         "https://maven.aliyun.com/repository/central",
         "https://maven.google.com",
@@ -33,6 +34,7 @@ maven.install(
         "rules_android",
     ],
     repositories = [
+        "https://mirrors.cloud.tencent.com/nexus/repository/maven-public",
         "https://maven.aliyun.com/repository/google",
         "https://maven.aliyun.com/repository/central",
         "https://maven.google.com",

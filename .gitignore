@@ -17,6 +17,9 @@ __pycache__/
 
 # Bazel
 bazel-*
+.bazel-distdir/
+.bazel-repository-cache/
+.coursier-cache/
 
 # Gradle / Android
 .gradle/

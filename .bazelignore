@@ -7,8 +7,11 @@ app/build
 
 # Bazel outputs and local dependency cache/prewarm directories.
 bazel-bin
+.bazel-distdir
 bazel-bytetrain_feishu
 bazel-distdir
 bazel-lib-3.1.0
 bazel-out
+.bazel-repository-cache
+.coursier-cache
 bazel-testlogs

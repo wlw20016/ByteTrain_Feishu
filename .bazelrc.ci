@@ -1,0 +1,11 @@
+# CI writes verified build and test results to the shared remote cache.
+# Local developer machines should keep uploads disabled in .bazelrc.local.
+
+build --remote_cache=http://159.75.170.170:9090
+test --remote_cache=http://159.75.170.170:9090
+
+build --remote_upload_local_results=true
+test --remote_upload_local_results=true
+
+build --remote_timeout=60
+test --remote_timeout=60
